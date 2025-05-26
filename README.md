@@ -22,6 +22,7 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
     ├── pictures/               // Bilder zu den Orten
     ├── css/                    // optionaler Ordner für eigene CSS-Dateien
     ├── js/                     // optionaler Ordner für eigene JS-Module
+    ├── ANLEITUNG.md            // Anleitung zur Mitarbeit
     └── README.md              // Projektdokumentation
 
 ## Datenquellen
@@ -30,7 +31,10 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
 - Ergebnisse aus studentischen Umfragen
 - OpenStreetMap
 - Eigene Ortsrecherche
+  
+## Beteiligung am Projekt
 
+Eine Anleitung zur Mitarbeit findet sich in der Datei `ANLEITUNG.md`.
 
 ## Hinweis zu GitHub Pages
 
