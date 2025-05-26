@@ -19,8 +19,6 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
     Hangover-WUEedition/
     ├── index.html               // Hauptseite mit Leaflet-Karte (enthält aktuell JS/CSS inline)
     ├── data.geojson            // Spot-Daten inkl. Beschreibung, Medienlinks, Koordinaten
-    ├── linie4.geojson          // Linienverlauf Linie 4
-    ├── linie5.geojson          // Linienverlauf Linie 5
     ├── pictures/               // Bilder zu den Orten
     ├── css/                    // optionaler Ordner für eigene CSS-Dateien
     ├── js/                     // optionaler Ordner für eigene JS-Module
