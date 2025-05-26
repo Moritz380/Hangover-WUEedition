@@ -1,6 +1,6 @@
 # Hangover-WUEedition
 
-Interaktive Karte zur Würzburger Studierendenkultur. Dieses Projekt ist Teil eines universitären Seminars und dient der Erkundung, Dokumentation und Vermittlung lokaler Freizeitangebote für Studierende, insbesondere entlang der Straßenbahnlinien 4 und 5.
+Interaktive Karte zur Würzburger Studierendenkultur. Dieses Projekt ist Teil eines universitären Seminars und dient der Erkundung, Dokumentation und Vermittlung lokaler Freizeitangebote für Studierende.
 
 ## Ziel
 
@@ -9,12 +9,10 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
 ## Inhalte und Funktionen
 
 - Darstellung von Orten in Würzburg mit geografischer Verortung
-- Zuordnung zu Straßenbahnlinien (Linie 4 und 5)
 - Kategorisierung nach Aktivitätsform (z. B. Entspannen, Sport, Ausgehen)
 - Verlinkung zu begleitenden Videos und Bildern
 - Detailansicht mit Beschreibung, Tags, Öffnungszeiten, Barrierefreiheit, Preisangaben
 - Such- und Filterfunktionen
-- Darstellung echter Linienverläufe der Straßenbahnlinien 4 und 5 auf Basis von OpenStreetMap-Daten
 
 ## Projektstruktur
 
@@ -32,13 +30,17 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
 
 - Videoaufnahmen durch das Projektteam
 - Ergebnisse aus studentischen Umfragen
-- OpenStreetMap (für Linienverläufe)
+- OpenStreetMap
 - Eigene Ortsrecherche
 
 
 ## Hinweis zu GitHub Pages
 
 Die Karte wird über GitHub Pages zugänglich gemacht. Das Repository dient ausschließlich der Bereitstellung und Archivierung des Projekts im universitären Rahmen.
+
+Die Karte kann hier aufgerufen werden:
+
+https://moritz380.github.io/Hangover-WUEedition/
 
 ## Lizenz
 
