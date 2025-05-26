@@ -14,6 +14,16 @@ Das Ziel ist eine interaktive Karte, die ausgewählte Orte aus studentischer Per
 - Detailansicht mit Beschreibung, Tags, Öffnungszeiten, Barrierefreiheit, Preisangaben
 - Such- und Filterfunktionen
 
+## Technische Grundlagen
+
+Dieses Projekt verwendet [Leaflet](https://leafletjs.com/) zur Darstellung der interaktiven Karte.
+
+Weitere Informationen:
+
+- Leaflet Dokumentation: https://leafletjs.com/reference.html
+- Einführung: https://leafletjs.com/examples/quick-start/
+- GeoJSON-Handling: https://leafletjs.com/examples/geojson/
+
 ## Projektstruktur
 
     Hangover-WUEedition/
