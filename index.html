@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Würzburg interaktiv</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body { margin: 0; display: flex; font-family: sans-serif; }
+    #sidebar { width: 300px; height: 100vh; overflow-y: auto; padding: 10px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+    #map { flex: 1; height: 100vh; }
+    .popup-video { width: 300px; height: 170px; }
+    .filter-btn { margin: 5px; padding: 6px 12px; background-color: #ddd; border: none; border-radius: 4px; cursor: pointer; }
+    .filter-btn.active { background-color: #888; color: #fff; }
+    #search { width: 100%; padding: 6px; margin-bottom: 10px; }
+    .location-entry { padding: 6px; border-bottom: 1px solid #ccc; cursor: pointer; }
+    .location-entry:hover { background-color: #eee; }
+
+    #detail-view {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 400px;
+      height: 100vh;
+      background: white;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+      overflow-y: auto;
+      padding: 20px;
+      z-index: 9999;
+      display: none;
+    }
+    #detail-view h2 { margin-top: 0; }
+    #detail-view img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
+    #detail-view iframe { width: 100%; height: 200px; border: none; }
+    #detail-close { margin-top: 20px; background: #888; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
+    .custom-tram-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <input type="text" id="search" placeholder="Ort suchen...">
+    <div id="filter-buttons"></div>
+    <div id="linie-buttons"></div>
+    <div id="location-list"></div>
+  </div>
+  <div id="map"></div>
+
+  <div id="detail-view">
+    <h2 id="detail-title"></h2>
+    <img id="detail-image" src="" alt="">
+    <p id="detail-description"></p>
+    <iframe id="detail-video" src="" allowfullscreen></iframe>
+    <button id="detail-close">Schließen</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([49.7942, 9.9301], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap-Mitwirkende'
+    }).addTo(map);
+
+    // Beispielhafte Linienverläufe
+    const linie4 = L.polyline([
+      [49.791, 9.918],
+      [49.793, 9.922],
+      [49.795, 9.926]
+    ], { color: 'purple' }).addTo(map);
+
+    const linie5 = L.polyline([
+      [49.788, 9.916],
+      [49.790, 9.920],
+      [49.792, 9.925]
+    ], { color: 'orange' }).addTo(map);
+
+    let allFeatures = [];
+    let currentLayer;
+    let allCategories = new Set();
+    let allLinien = new Set();
+    let markers = [];
+
+    const linieColors = {
+      "4": "purple",
+      "5": "orange"
+    };
+
+    const detailView = document.getElementById('detail-view');
+    const detailTitle = document.getElementById('detail-title');
+    const detailImage = document.getElementById('detail-image');
+    const detailDescription = document.getElementById('detail-description');
+    const detailVideo = document.getElementById('detail-video');
+    const detailClose = document.getElementById('detail-close');
+
+    detailClose.addEventListener('click', () => {
+      detailView.style.display = 'none';
+    });
+
+    function showDetail(props) {
+      detailTitle.textContent = props.title;
+      detailDescription.textContent = props.description || "";
+      detailImage.src = props.image_url || "";
+      detailImage.style.display = props.image_url ? 'block' : 'none';
+      detailVideo.src = props.video_url || "";
+      detailView.style.display = 'block';
+    }
+
+    function createTramIcon(color) {
+      return L.divIcon({
+        className: 'custom-tram-icon',
+        html: '🚋',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+    }
+
+    let currentCategory = null;
+    let currentLinie = null;
+
+    fetch('data.geojson')
+      .then(response => response.json())
+      .then(json => {
+        allFeatures = json.features;
+        json.features.forEach(f => {
+          allCategories.add(f.properties.category);
+          if (f.properties.linie) {
+            f.properties.linie.toString().split(',').forEach(l => allLinien.add(l.trim()));
+          }
+        });
+
+        const filterDiv = document.getElementById('filter-buttons');
+        const categories = ['Alle', ...Array.from(allCategories)];
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.innerText = cat;
+          btn.className = 'filter-btn';
+          btn.onclick = () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = (cat === 'Alle') ? null : cat;
+            updateMarkers();
+          };
+          filterDiv.appendChild(btn);
+        });
+
+        const linieDiv = document.getElementById('linie-buttons');
+        const linien = ['Alle', ...Array.from(allLinien)];
+        linien.forEach(linie => {
+          const btn = document.createElement('button');
+          btn.innerText = `Linie ${linie}`;
+          btn.className = 'filter-btn';
+          btn.onclick = () => {
+            document.querySelectorAll('#linie-buttons .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentLinie = (linie === 'Alle') ? null : linie;
+            updateMarkers();
+          };
+          linieDiv.appendChild(btn);
+        });
+
+        updateMarkers();
+      })
+      .catch(err => console.error("Fehler beim Laden oder Parsen von data.geojson:", err));
+
+    function updateMarkers() {
+      if (currentLayer) map.removeLayer(currentLayer);
+      markers = [];
+      document.getElementById('location-list').innerHTML = '';
+
+      const filtered = allFeatures.filter(f => {
+        const matchCategory = currentCategory ? f.properties.category === currentCategory : true;
+        const matchLinie = currentLinie ? (f.properties.linie && f.properties.linie.toString().includes(currentLinie)) : true;
+        return matchCategory && matchLinie;
+      });
+
+      currentLayer = L.geoJSON({ type: 'FeatureCollection', features: filtered }, {
+        pointToLayer: function (feature, latlng) {
+          const linien = (feature.properties.linie || '').split(',');
+          const farbe = linien[0]?.trim();
+          const icon = linieColors[farbe] ? createTramIcon(linieColors[farbe]) : createTramIcon("gray");
+          const marker = L.marker(latlng, { icon });
+          markers.push({ title: feature.properties.title, marker });
+          return marker;
+        },
+        onEachFeature: function (feature, layer) {
+          const props = feature.properties;
+
+          layer.on('click', () => showDetail(props));
+
+          const listItem = document.createElement('div');
+          listItem.className = 'location-entry';
+          listItem.innerText = props.title;
+          listItem.onclick = () => {
+            map.setView(layer.getLatLng(), 15);
+            layer.openPopup();
+            showDetail(props);
+          };
+          document.getElementById('location-list').appendChild(listItem);
+        }
+      }).addTo(map);
+    }
+
+    document.getElementById('search').addEventListener('input', function () {
+      const term = this.value.toLowerCase();
+      const items = document.querySelectorAll('.location-entry');
+      items.forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(term) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

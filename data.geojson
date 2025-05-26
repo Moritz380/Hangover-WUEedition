@@ -1,0 +1,37 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [9.9301, 49.7942]
+        },
+        "properties": {
+          "title": "Ringpark",
+          "category": "Wellbeing",
+          "video_url": "https://www.youtube.com/embed/WTMbq9mb8ak",
+          "description": "Ein ruhiger, grüner Rückzugsort mitten in Würzburg. Ideal zum Entspannen, Spazierengehen und Lesen.",
+          "image_url": "bilder/ringpark.jpg",
+          "linie": "4,5"
+
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [9.9361, 49.7895]
+        },
+        "properties": {
+          "title": "Mainufer",
+          "category": "Entspannen",
+          "video_url": "https://www.youtube.com/embed/WTMbq9mb8ak",
+          "description": "Am Alten Kranen entlang des Mains – perfekt für Sonnenuntergänge, Jogging oder Picknick.",
+          "image_url": "bilder/mainufer.jpg",
+          "linie": "4,5"
+        }
+      }
+    ]
+  }
+  
