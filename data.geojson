@@ -1,37 +1,17 @@
 {
-    "type": "FeatureCollection",
-    "features": [
-      {
-        "type": "Feature",
-        "geometry": {
-          "type": "Point",
-          "coordinates": [9.9301, 49.7942]
-        },
-        "properties": {
-          "title": "Ringpark",
-          "category": "Wellbeing",
-          "video_url": "https://www.youtube.com/embed/WTMbq9mb8ak",
-          "description": "Ein ruhiger, grüner Rückzugsort mitten in Würzburg. Ideal zum Entspannen, Spazierengehen und Lesen.",
-          "image_url": "bilder/ringpark.jpg",
-          "linie": "4,5"
-
-        }
-      },
-      {
-        "type": "Feature",
-        "geometry": {
-          "type": "Point",
-          "coordinates": [9.9361, 49.7895]
-        },
-        "properties": {
-          "title": "Mainufer",
-          "category": "Entspannen",
-          "video_url": "https://www.youtube.com/embed/WTMbq9mb8ak",
-          "description": "Am Alten Kranen entlang des Mains – perfekt für Sonnenuntergänge, Jogging oder Picknick.",
-          "image_url": "bilder/mainufer.jpg",
-          "linie": "4,5"
-        }
-      }
-    ]
-  }
-  
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9343331, 49.7859545] }, "properties": { "name": "Mensa am Studentenhaus", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Am Studentenhaus, 97072 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.927389, 49.7898861] }, "properties": { "name": "Hennes Kiosk & Café", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "u. Johannitergasse 2, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.929524, 49.7901612] }, "properties": { "name": "Unicafé", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Neubaustraße 2, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.942759, 49.7912065] }, "properties": { "name": "Stehtisch", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Friedrich-Ebert-Ring 4, 97072 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9390337, 49.7927765] }, "properties": { "name": "Residenz Würzburg", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Residenzpl. 2, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9261348, 49.7962578] }, "properties": { "name": "Locanda Würzburg", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Kranenkai 1, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9200275, 49.7897373] }, "properties": { "name": "Festung Marienberg", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Marienberg, 97082 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.919236, 49.7984155] }, "properties": { "name": "Kiliani", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Talaveraplatz, 97082 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9313418, 49.7874561] }, "properties": { "name": "Wohnzimmer Bar", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Tiepolostraße 21, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9278871, 49.7888874] }, "properties": { "name": "Tscharlies Musikkneipe", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Sanderstraße 8, 97070 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.9241843, 49.7922928] }, "properties": { "name": "Moritz Bar", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Burkarderstraße 12, 97082 Würzburg", "note": "" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.967699, 49.7815133] }, "properties": { "name": "Mensa Am Hubland", "category": "", "description": "", "video_url": "", "image_url": "", "opening_hours": "", "cost": "", "accessible": "", "tags": "", "address": "Am Hubland 16, 97074 Würzburg", "note": "" } }
+  ]
+}
