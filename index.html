@@ -24,7 +24,8 @@
     #detail-view img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
     #detail-view iframe { width: 100%; height: 200px; border: none; }
     #search { width: 100%; padding: 6px; margin-bottom: 10px; }
-    .location-entry { padding: 6px; border-bottom: 1px solid #ccc; cursor: pointer; }
+    .category { font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .location-entry { padding: 6px; border-bottom: 1px solid #ccc; cursor: pointer; display: none; }
     .location-entry:hover { background-color: #eee; }
     #detail-close { margin-top: 20px; background: #888; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
   </style>
@@ -55,7 +56,7 @@
       attribution: '© OpenStreetMap-Mitwirkende'
     }).addTo(map);
 
-    let allFeatures = [], currentLayer = null, markers = [];
+    let allFeatures = [], currentLayer = null, markers = [], grouped = {};
 
     const detailView = document.getElementById('detail-view');
     const detailTitle = document.getElementById('detail-title');
@@ -88,7 +89,6 @@
     function updateMarkers() {
       if (currentLayer) map.removeLayer(currentLayer);
       markers = [];
-      document.getElementById('location-list').innerHTML = '';
 
       currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
         pointToLayer: (feature, latlng) => {
@@ -97,34 +97,59 @@
           return marker;
         },
         onEachFeature: (feature, layer) => {
-          const props = feature.properties;
-          layer.on('click', () => showDetail(props));
-
-          const listItem = document.createElement('div');
-          listItem.className = 'location-entry';
-          listItem.innerText = props.name || "(Kein Titel)";
-          listItem.onclick = () => {
-            map.setView(layer.getLatLng(), 15);
-            layer.openPopup();
-            showDetail(props);
-          };
-          document.getElementById('location-list').appendChild(listItem);
+          layer.on('click', () => showDetail(feature.properties));
         }
       }).addTo(map);
+    }
+
+    function buildCategoryList() {
+      const container = document.getElementById('location-list');
+      container.innerHTML = '';
+      Object.keys(grouped).forEach(category => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        catDiv.textContent = category;
+        container.appendChild(catDiv);
+
+        grouped[category].forEach(f => {
+          const locDiv = document.createElement('div');
+          locDiv.className = 'location-entry';
+          locDiv.textContent = f.properties.name;
+          locDiv.onclick = () => {
+            map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 15);
+            showDetail(f.properties);
+          };
+          catDiv.appendChild(locDiv);
+        });
+
+        catDiv.addEventListener('click', () => {
+          const entries = catDiv.querySelectorAll('.location-entry');
+          entries.forEach(e => {
+            e.style.display = e.style.display === 'block' ? 'none' : 'block';
+          });
+        });
+      });
     }
 
     fetch('data.geojson')
       .then(response => response.json())
       .then(data => {
         allFeatures = data.features;
+        grouped = {};
+        allFeatures.forEach(f => {
+          const cat = f.properties.category || "Sonstiges";
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(f);
+        });
         updateMarkers();
+        buildCategoryList();
       })
       .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
 
     document.getElementById('search').addEventListener('input', function () {
       const term = this.value.toLowerCase();
       document.querySelectorAll('.location-entry').forEach(item => {
-        item.style.display = item.innerText.toLowerCase().includes(term) ? '' : 'none';
+        item.style.display = item.innerText.toLowerCase().includes(term) ? 'block' : 'none';
       });
     });
   </script>
