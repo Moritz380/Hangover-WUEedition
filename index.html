@@ -56,13 +56,40 @@
       attribution: '© OpenStreetMap-Mitwirkende'
     }).addTo(map);
 
+    const icons = {
+      "Food": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/308/308099.png', // Besteck
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      }),
+      "Sport": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/4163/4163684.png', // Sport
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      }),
+      "Café": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/590/590836.png', // Tasse Kaffee
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      }),
+      "Unterhaltung": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/1778/1778568.png', // Masken
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      }),
+      "Kultur": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/2667/2667339.png', // Gemälde
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      }),
+      "Ausgehen": L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/3755/3755631.png', // Tänzer
+        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      })
+    };
+
     let allFeatures = [], currentLayer = null, markers = [], grouped = {};
 
     const detailView = document.getElementById('detail-view');
     const detailTitle = document.getElementById('detail-title');
     const detailImage = document.getElementById('detail-image');
-    const detailDescription = document.getElementById('detail-description');
     const detailAddress = document.getElementById('detail-address');
+    const detailDescription = document.getElementById('detail-description');
     const detailOpening = document.getElementById('detail-opening');
     const detailCost = document.getElementById('detail-cost');
     const detailAccessible = document.getElementById('detail-accessible');
@@ -74,8 +101,8 @@
 
     function showDetail(props) {
       detailTitle.textContent = props.name || "(Kein Titel)";
-      detailDescription.textContent = props.description || "";
       detailAddress.textContent = props.address ? 'Adresse: ' + props.address : "";
+      detailDescription.textContent = props.description || "";      
       detailOpening.textContent = props.opening_hours ? 'Öffnungszeiten: ' + props.opening_hours : "";
       detailCost.textContent = props.cost ? 'Kosten: ' + props.cost : "";
       detailAccessible.textContent = props.accessible ? 'Barrierefreiheit: ' + props.accessible : "";
@@ -92,7 +119,9 @@
 
       currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
         pointToLayer: (feature, latlng) => {
-          const marker = L.marker(latlng);
+          const cat = feature.properties.category;
+          const icon = icons[cat] || undefined;
+          const marker = L.marker(latlng, icon ? { icon } : {});
           markers.push(marker);
           return marker;
         },
@@ -116,7 +145,7 @@
           locDiv.className = 'location-entry';
           locDiv.textContent = f.properties.name;
           locDiv.onclick = () => {
-            map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 15);
+            map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 18);
             showDetail(f.properties);
           };
           catDiv.appendChild(locDiv);
