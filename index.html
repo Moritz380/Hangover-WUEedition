@@ -5,84 +5,155 @@
   <title>Würzburg interaktiv</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css" />
   <style>
-    body { margin: 0; display: flex; font-family: sans-serif; }
-    #sidebar {
-      width: 300px; height: 100vh;
-      overflow-y: auto; padding: 10px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    html, body {
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
     }
-    #map { flex: 1; height: 100vh; }
+    #map {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      z-index: 1;
+    }
     #detail-view {
-      position: fixed; right: 0; top: 0;
-      width: 400px; height: 100vh;
-      background: white; box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-      overflow-y: auto; padding: 20px; z-index: 9999;
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 400px;
+      height: 100vh;
+      background: white;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+      overflow-y: auto;
+      padding: 20px;
+      z-index: 9999;
       display: none;
     }
     #detail-view h2 { margin-top: 0; }
     #detail-view img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
     #detail-view iframe { width: 100%; height: 200px; border: none; }
-    #search { width: 100%; padding: 6px; margin-bottom: 10px; }
     .category { font-weight: bold; cursor: pointer; margin-top: 10px; }
     .location-entry { padding: 6px; border-bottom: 1px solid #ccc; cursor: pointer; display: none; }
     .location-entry:hover { background-color: #eee; }
     #detail-close { margin-top: 20px; background: #888; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
+    footer {
+      height: 38px;
+      line-height: 22px;
+      background: #f9f9f9;
+      border-top: 1px solid #ccc;
+      text-align: center;
+      font-size: 12px;
+      padding: 8px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <input type="text" id="search" placeholder="Ort suchen...">
+<button id="filter-toggle" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; background: #e63950; color: white; padding: 12px 20px; border: none; border-radius: 16px; font-size: 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+  <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="white">
+    <path d="M0 0h24v24H0z" fill="none"/>
+    <path d="M10 18h4v-2h-4v2zm-7-6v2h18v-2H3zm3-6v2h12V6H6z"/>
+  </svg>
+  <span>Suchen / Filtern</span>
+</button>
+  <div id="main">
+  <div id="sidebar" style="position: absolute; top: 70px; left: 20px; z-index: 999; width: 300px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); padding: 10px; display: none;">
+    <input type="text" id="search" placeholder="Ort suchen..." style="width: 100%; padding: 6px; margin-bottom: 10px;">
     <div id="location-list"></div>
   </div>
+
   <div id="map"></div>
-  <div id="detail-view">
-    <h2 id="detail-title"></h2>
-    <img id="detail-image" src="" alt="">
-    <p id="detail-description"></p>
-    <p id="detail-address"></p>
-    <p id="detail-opening"></p>
-    <p id="detail-cost"></p>
-    <p id="detail-accessible"></p>
-    <p id="detail-tags"></p>
-    <iframe id="detail-video" src="" allowfullscreen></iframe>
-    <button id="detail-close">Schließen</button>
-  </div>
+
+<div id="detail-view" style="position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; box-shadow: -2px 0 5px rgba(0,0,0,0.2); overflow-y: auto; padding: 20px; z-index: 9999; display: none;">
+  <button id="detail-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 28px; font-weight: bold; color: #333; cursor: pointer; z-index: 10000;">&times;</button>
+  <h2 id="detail-title"></h2>
+  <img id="detail-image" src="" alt="" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px; display: none;">
+  <p id="detail-description"></p>
+  <p id="detail-address"></p>
+  <p id="detail-opening"></p>
+  <p id="detail-cost"></p>
+  <p id="detail-accessible"></p>
+  <p id="detail-tags"></p>
+  <iframe id="detail-video" src="" allowfullscreen style="width: 100%; height: 200px; border: none; display: none;"></iframe>
+</div>
+
+<footer style="position: fixed; bottom: 0; width: 100%; background: #f9f9f9; border-top: 1px solid #ccc; padding: 8px; text-align: center; font-size: 12px; z-index: 9999;">
+  <a href="#" onclick="alert('Impressum kommt bald.')">Impressum</a>
+  &nbsp;|&nbsp;
+  <a href="#" onclick="alert('Datenschutzerklärung kommt bald.')">Datenschutzerklärung</a>
+  &nbsp;|&nbsp;
+  <a href="#" onclick="alert('Datenschutzeinstellungen kommen bald.')">Datenschutzeinstellungen</a>
+</footer>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
   <script>
-    const map = L.map('map').setView([49.7942, 9.9301], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap-Mitwirkende & CartoDB',
-  subdomains: 'abcd',
-  maxZoom: 19
-}).addTo(map);
+    const toggleButton = document.getElementById('filter-toggle');
+    const sidebar = document.getElementById('sidebar');
+    toggleButton.addEventListener('click', () => {
+      sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    });
 
-    const icons = {
-      "Food": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/308/308099.png', // Besteck
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+    const map = L.map('map', { fullscreenControl: true }).setView([49.7942, 9.9301], 13);
+
+    const baseLayers = {
+      "Karte": L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
       }),
-      "Sport": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/4163/4163684.png', // Sport
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
-      }),
-      "Café": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/590/590836.png', // Tasse Kaffee
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
-      }),
-      "Unterhaltung": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/1778/1778568.png', // Masken
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
-      }),
-      "Kultur": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/2667/2667339.png', // Gemälde
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
-      }),
-      "Ausgehen": L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/3755/3755631.png', // Tänzer
-        iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+      "Luftbild": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 20,
+        attribution: 'Tiles &copy; Esri'
       })
+    };
+
+    baseLayers["Karte"].addTo(map);
+    L.control.layers(baseLayers).addTo(map);
+
+    L.Control.MyLocation = L.Control.extend({
+      onAdd: function(map) {
+        const btn = L.DomUtil.create('button', 'leaflet-bar');
+        btn.innerHTML = '📍';
+        btn.title = 'Mein Standort';
+        btn.style.cssText = 'font-size:18px;width:34px;height:34px;border:1px solid #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer';
+        L.DomEvent.on(btn, 'click', function (e) {
+          L.DomEvent.stopPropagation(e);
+          L.DomEvent.preventDefault(e);
+          if (!navigator.geolocation) {
+            alert('Standortbestimmung wird von diesem Browser nicht unterstützt.');
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(pos => {
+            const { latitude, longitude } = pos.coords;
+            const marker = L.marker([latitude, longitude]).addTo(map).bindPopup("Du bist hier!").openPopup();
+            map.setView([latitude, longitude], 16);
+          }, () => {
+            alert('Standort konnte nicht bestimmt werden.');
+          });
+        });
+        return btn;
+      },
+      onRemove: function(map) {}
+    });
+
+    L.control.myLocation = function(opts) {
+      return new L.Control.MyLocation(opts);
+    };
+
+    L.control.myLocation({ position: 'topleft' }).addTo(map);
+    const icons = {
+      "Essen & Trinken": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/308/308099.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Sport & Aktivität": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/4163/4163684.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Unterhaltung & Begegnung": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/1778/1778568.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Kultur & Sehenswürdigkeiten": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2667/2667339.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Ausgehen & Nachtleben": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3755/3755631.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Universität & Studium": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3145/3145765.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
+      "Events & Festivals": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/747/747310.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] })
     };
 
     let allFeatures = [], currentLayer = null, markers = [], grouped = {};
@@ -104,7 +175,7 @@
     function showDetail(props) {
       detailTitle.textContent = props.name || "(Kein Titel)";
       detailAddress.textContent = props.address ? 'Adresse: ' + props.address : "";
-      detailDescription.textContent = props.description || "";      
+      detailDescription.textContent = props.description || "";
       detailOpening.textContent = props.opening_hours ? 'Öffnungszeiten: ' + props.opening_hours : "";
       detailCost.textContent = props.cost ? 'Kosten: ' + props.cost : "";
       detailAccessible.textContent = props.accessible ? 'Barrierefreiheit: ' + props.accessible : "";
@@ -118,7 +189,6 @@
     function updateMarkers() {
       if (currentLayer) map.removeLayer(currentLayer);
       markers = [];
-
       currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
         pointToLayer: (feature, latlng) => {
           const cat = feature.properties.category;
@@ -141,7 +211,6 @@
         catDiv.className = 'category';
         catDiv.textContent = category;
         container.appendChild(catDiv);
-
         grouped[category].forEach(f => {
           const locDiv = document.createElement('div');
           locDiv.className = 'location-entry';
@@ -152,7 +221,6 @@
           };
           catDiv.appendChild(locDiv);
         });
-
         catDiv.addEventListener('click', () => {
           const entries = catDiv.querySelectorAll('.location-entry');
           entries.forEach(e => {
