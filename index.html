@@ -6,251 +6,1086 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     html, body {
       height: 100vh;
       margin: 0;
       font-family: sans-serif;
     }
+    
     #map {
       height: 100vh;
       width: 100vw;
       position: relative;
       z-index: 1;
     }
+    
     #detail-view {
       position: fixed;
       right: 0;
       top: 0;
-      width: 400px;
+      width: 420px;
       height: 100vh;
-      background: white;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
       overflow-y: auto;
-      padding: 20px;
+      padding: 0;
       z-index: 9999;
       display: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
-    #detail-view h2 { margin-top: 0; }
-    #detail-view img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
-    #detail-view iframe { width: 100%; height: 200px; border: none; }
-    .category { font-weight: bold; cursor: pointer; margin-top: 10px; }
-    .location-entry { padding: 6px; border-bottom: 1px solid #ccc; cursor: pointer; display: none; }
-    .location-entry:hover { background-color: #eee; }
-    #detail-close { margin-top: 20px; background: #888; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-    footer {
-      height: 38px;
-      line-height: 22px;
-      background: #f9f9f9;
-      border-top: 1px solid #ccc;
-      text-align: center;
-      font-size: 12px;
-      padding: 8px;
-      position: fixed;
-      bottom: 0;
+
+    #detail-view.show {
+      transform: translateX(0);
+    }
+
+    #detail-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px 20px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    #detail-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    #detail-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    #detail-close:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    #detail-content {
+      padding: 0 20px 20px;
+    }
+
+    #detail-image {
       width: 100%;
-      z-index: 10;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .detail-section {
+      background: white;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-left: 4px solid #667eea;
+    }
+
+    .detail-section:empty {
+      display: none;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-section p {
+      margin: 0;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .detail-section.address::before { content: "📍 "; }
+    .detail-section.hours::before { content: "🕒 "; }
+    .detail-section.cost::before { content: "💰 "; }
+    .detail-section.accessible::before { content: "♿ "; }
+    .detail-section.tags::before { content: "🏷️ "; }
+
+    #detail-video {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    #detail-view::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #detail-view::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    #detail-view::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 3px;
+    }
+
+    #detail-view::-webkit-scrollbar-thumb:hover {
+      background: #764ba2;
+    }
+    
+    .category { 
+      cursor: pointer; 
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      border: 1px solid #e0e0e0;
+      background: #f9f9f9;
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .category:hover {
+      background-color: #f0f0f0;
+      border-color: #ccc;
+      transform: translateX(2px);
+    }
+
+    .category.active {
+      background-color: #f5f5f5;
+      border-color: #999;
+      border-left: 4px solid #e63950;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .location-entry { 
+      padding: 6px; 
+      border-bottom: 1px solid #ccc; 
+      cursor: pointer; 
+      display: none;
+      font-size: 13px;
+      font-weight: 400;
+    }
+    
+    .location-entry:hover { 
+      background-color: #eee; 
+    }
+
+    #filter-controls {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    #show-all-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #show-all-btn:hover {
+      background: #5a6268;
+    }
+
+    #show-all-btn.active {
+      background: #495057;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    #filter-toggle {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background: #e63950;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      pointer-events: auto;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+
+    #filter-toggle:hover {
+      background: #d32f2f;
+    }
+
+    #filter-toggle:focus {
+      outline: 2px solid rgba(230, 57, 80, 0.5);
+      outline-offset: 2px;
+    }
+
+    #filter-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    #sidebar {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999999;
+      width: 320px;
+      max-width: 90vw;
+      background: white;
+      padding: 15px;
+      display: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    #sidebar input[type="text"] {
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #sidebar input[type="text"]:focus {
+      outline: none;
+      border-color: #e63950;
+      box-shadow: 0 0 0 3px rgba(230, 57, 80, 0.1);
+    }
+
+    #location-list {
+      max-height: 50vh;
+      overflow-y: auto;
+      border-radius: 6px;
+    }
+
+    footer {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 8px;
+      min-width: unset;
+      max-width: 90vw;
+      padding: 2px 16px;
+      background: rgba(240,240,245,0.65);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(40,42,60,0.04);
+      border: none;
+      text-align: center;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: #000;
+      z-index: 1200;
+      letter-spacing: 0.05em;
+      opacity: 0.85;
+      transition: background 0.2s;
+    }
+
+    footer:hover {
+      background: rgba(240,240,245,0.95);
+    }
+
+    footer a {
+      color: #000;
+      font-weight: 400;
+      text-decoration: underline dotted;
+      font-size: 11px;
+      margin: 0 4px;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    footer a:hover {
+      opacity: 1;
+      color: #000;
+    }
+
+    .leaflet-control-attribution {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    .leaflet-bottom.leaflet-right {
+      display: none !important;
+    }
+
+    #custom-attribution {
+      position: fixed !important;
+      bottom: 8px !important;
+      right: 8px !important;
+      background: rgba(240,240,245,0.65) !important;
+      color: #000 !important;
+      font-size: 11px !important;
+      padding: 3px 10px !important;
+      border-radius: 10px !important;
+      z-index: 1000 !important;
+      pointer-events: auto !important;
+      opacity: 0.85 !important;
+      transition: background 0.2s !important;
+      max-width: none !important;
+      white-space: nowrap !important;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2) !important;
+    }
+
+    #custom-attribution:hover {
+      background: rgba(240,240,245,0.95) !important;
+    }
+
+    #custom-attribution a {
+      color: #000 !important;
+      text-decoration: underline dotted !important;
+      opacity: 0.9 !important;
+      transition: opacity 0.2s !important;
+      margin: 0 2px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+    }
+
+    #custom-attribution a:hover {
+      opacity: 1 !important;
+    }
+
+    #custom-attribution svg {
+      margin-right: 4px !important;
+    }
+
+    .leaflet-control-container .leaflet-top.leaflet-left {
+      margin: 10px;
+    }
+
+    .leaflet-control {
+      margin-bottom: 10px !important;
+      border-radius: 4px !important;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
+      border: none !important;
+    }
+
+    .leaflet-control-zoom {
+      background: white !important;
+    }
+
+    .leaflet-control-zoom a {
+      width: 30px !important;
+      height: 30px !important;
+      line-height: 30px !important;
+      text-align: center !important;
+      background: white !important;
+      color: #333 !important;
+      font-size: 18px !important;
+      font-weight: bold !important;
+      border: none !important;
+      border-bottom: 1px solid #ccc !important;
+    }
+
+    .leaflet-control-zoom a:hover {
+      background: #f4f4f4 !important;
+    }
+
+    .leaflet-control-zoom-out {
+      border-bottom: none !important;
+    }
+
+    .leaflet-control-layers {
+      background: white !important;
+      padding: 0 !important;
+      min-width: 30px !important;
+      min-height: 30px !important;
+    }
+
+    .leaflet-control-layers-toggle {
+      width: 30px !important;
+      height: 30px !important;
+      background: white !important;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27L11.99 18.54zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z'/%3E%3C/svg%3E") !important;
+      background-size: 18px 18px !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      border: none !important;
+    }
+
+    .leaflet-control-layers-toggle:hover {
+      background-color: #f4f4f4 !important;
+    }
+
+    .leaflet-control-layers-list {
+      background: white !important;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
+      border-radius: 4px !important;
+      padding: 8px !important;
+      margin-top: 2px !important;
+      min-width: 120px !important;
+    }
+
+    .leaflet-control-layers-list label {
+      font-size: 12px !important;
+      margin: 4px 0 !important;
+      cursor: pointer !important;
+      display: block !important;
+    }
+
+    .leaflet-control-fullscreen {
+      background: white !important;
+      width: 30px !important;
+      height: 30px !important;
+    }
+
+    .leaflet-control-fullscreen-button {
+      width: 30px !important;
+      height: 30px !important;
+      background: white !important;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'/%3E%3C/svg%3E") !important;
+      background-size: 18px 18px !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      border: none !important;
+    }
+
+    .leaflet-control-fullscreen-button:hover {
+      background-color: #f4f4f4 !important;
+    }
+
+    .leaflet-control-location {
+      background: white !important;
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 4px !important;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
+    }
+
+    .leaflet-control-location-button {
+      width: 30px !important;
+      height: 30px !important;
+      background: white !important;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z'/%3E%3C/svg%3E") !important;
+      background-size: 18px 18px !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      border: none !important;
+      border-radius: 4px !important;
+    }
+
+    .leaflet-control-location-button:hover {
+      background-color: #f4f4f4 !important;
+    }
+
+    @media (max-width: 768px) {
+      #detail-view {
+        width: 100vw !important;
+        left: 0;
+      }
+      
+      #sidebar {
+        width: 95vw;
+        max-width: 95vw;
+      }
+      
+      #filter-toggle {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+      
+      footer {
+        font-size: 10px;
+        padding: 2px 12px;
+      }
     }
   </style>
 </head>
 <body>
-<button id="filter-toggle" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; background: #e63950; color: white; padding: 12px 20px; border: none; border-radius: 16px; font-size: 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-  <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="white">
-    <path d="M0 0h24v24H0z" fill="none"/>
-    <path d="M10 18h4v-2h-4v2zm-7-6v2h18v-2H3zm3-6v2h12V6H6z"/>
+
+<button id="filter-toggle" onclick="toggleFilterSidebar()" tabindex="0" 
+        title="Suchen / Filtern" aria-expanded="false" aria-controls="sidebar">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30">
+    <path d="M16.7,26.9c-0.2,0-0.4-0.1-0.6-0.2l-2.7-1.9c-0.5-0.4-0.9-1.1-0.9-1.7v-6.1c0-0.3-0.2-0.9-0.4-1.1L2.4,4.6C2,4.1,2.1,3.8,2.2,3.6c0.1-0.1,0.3-0.5,0.9-0.5h23.8c0.6,0,0.8,0.3,0.9,0.5c0.1,0.1,0.2,0.5-0.2,1v0l-9.7,11.2c-0.2,0.3-0.4,0.8-0.4,1.1v9c0,0.4-0.2,0.7-0.5,0.9C16.9,26.8,16.8,26.9,16.7,26.9z M3.4,4.1l9.5,11c0.4,0.4,0.7,1.2,0.7,1.8V23c0,0.3,0.2,0.7,0.5,0.9l2.5,1.8l0-8.8c0-0.6,0.3-1.3,0.7-1.8l9.5-11L3.4,4.1z"></path>
   </svg>
   <span>Suchen / Filtern</span>
 </button>
-  <div id="main">
-  <div id="sidebar" style="position: absolute; top: 70px; left: 20px; z-index: 999; width: 300px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); padding: 10px; display: none;">
-    <input type="text" id="search" placeholder="Ort suchen..." style="width: 100%; padding: 6px; margin-bottom: 10px;">
-    <div id="location-list"></div>
+
+<div id="main">
+  <div id="sidebar">
+    <div id="filter-controls">
+      <button id="show-all-btn" class="active" onclick="showAllMarkersAndClose()">Alle anzeigen</button>
+    </div>
+    
+    <input type="text" id="search" placeholder="Ort suchen..." 
+           aria-label="Suchfeld für Orte">
+    <div id="location-list" role="list"></div>
   </div>
 
   <div id="map"></div>
 
-<div id="detail-view" style="position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; box-shadow: -2px 0 5px rgba(0,0,0,0.2); overflow-y: auto; padding: 20px; z-index: 9999; display: none;">
-  <button id="detail-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 28px; font-weight: bold; color: #333; cursor: pointer; z-index: 10000;">&times;</button>
-  <h2 id="detail-title"></h2>
-  <img id="detail-image" src="" alt="" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px; display: none;">
-  <p id="detail-description"></p>
-  <p id="detail-address"></p>
-  <p id="detail-opening"></p>
-  <p id="detail-cost"></p>
-  <p id="detail-accessible"></p>
-  <p id="detail-tags"></p>
-  <iframe id="detail-video" src="" allowfullscreen style="width: 100%; height: 200px; border: none; display: none;"></iframe>
+  <div id="detail-view" role="dialog" aria-labelledby="detail-title">
+    <div id="detail-header">
+      <h2 id="detail-title"></h2>
+      <button id="detail-close" tabindex="0" aria-label="Detailansicht schließen">&times;</button>
+    </div>
+    
+    <div id="detail-content">
+      <img id="detail-image" src="" alt="" style="display: none;">
+      <iframe id="detail-video" src="" allowfullscreen style="display: none;"></iframe>
+      
+      <div id="detail-description" class="detail-section description"></div>
+      <div id="detail-address" class="detail-section address"></div>
+      <div id="detail-opening" class="detail-section hours"></div>
+      <div id="detail-cost" class="detail-section cost"></div>
+      <div id="detail-accessible" class="detail-section accessible"></div>
+      <div id="detail-tags" class="detail-section tags"></div>
+    </div>
+  </div>
 </div>
 
-<footer style="position: fixed; bottom: 0; width: 100%; background: #f9f9f9; border-top: 1px solid #ccc; padding: 8px; text-align: center; font-size: 12px; z-index: 9999;">
+<footer>
   <a href="#" onclick="alert('Impressum kommt bald.')">Impressum</a>
-  &nbsp;|&nbsp;
-  <a href="#" onclick="alert('Datenschutzerklärung kommt bald.')">Datenschutzerklärung</a>
-  &nbsp;|&nbsp;
-  <a href="#" onclick="alert('Datenschutzeinstellungen kommen bald.')">Datenschutzeinstellungen</a>
+  <span>|</span>
+  <a href="#" onclick="alert('Datenschutz kommt bald.')">Datenschutz</a>
 </footer>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
-  <script>
-    const toggleButton = document.getElementById('filter-toggle');
-    const sidebar = document.getElementById('sidebar');
-    toggleButton.addEventListener('click', () => {
-      sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-    });
+<div id="custom-attribution">
+  <a href="https://leafletjs.com" title="A JavaScript library for interactive maps">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8">
+      <path fill="#4C7BE1" d="M0 0h12v4H0z"></path>
+      <path fill="#FFD500" d="M0 4h12v3H0z"></path>
+      <path fill="#E0BC00" d="M0 7h12v1H0z"></path>
+    </svg> Leaflet
+  </a>
+  | <span id="current-attribution">© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-Mitwirkende</a></span>
+</div>
 
-    const map = L.map('map', { fullscreenControl: true }).setView([49.7942, 9.9301], 13);
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
 
-    const baseLayers = {
-      "Karte": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-      }),
-      "Luftbild": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        attribution: 'Tiles &copy; Esri'
-      })
+<script>
+let allFeatures = [];
+let currentLayer = null;
+let grouped = {};
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
     };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
-    baseLayers["Karte"].addTo(map);
-    L.control.layers(baseLayers).addTo(map);
+function toggleFilterSidebar() {
+  console.log('Filter-Button wurde geklickt!');
+  const sidebar = document.getElementById('sidebar');
+  const filterButton = document.getElementById('filter-toggle');
+  
+  if (sidebar.style.display === 'block') {
+    resetSearchResults();
+    sidebar.style.display = 'none';
+    filterButton.setAttribute('aria-expanded', 'false');
+    console.log('Sidebar geschlossen und zurückgesetzt');
+  } else {
+    sidebar.style.display = 'block';
+    filterButton.setAttribute('aria-expanded', 'true');
+    document.getElementById('search').focus();
+    console.log('Sidebar geöffnet');
+  }
+}
 
-    L.Control.MyLocation = L.Control.extend({
-      onAdd: function(map) {
-        const btn = L.DomUtil.create('button', 'leaflet-bar');
-        btn.innerHTML = '📍';
-        btn.title = 'Mein Standort';
-        btn.style.cssText = 'font-size:18px;width:34px;height:34px;border:1px solid #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer';
+function resetSearchResults() {
+  document.getElementById('search').value = '';
+  
+  document.querySelectorAll('.category').forEach(category => {
+    category.style.display = 'block';
+    category.classList.remove('active');
+  });
+  
+  document.querySelectorAll('.location-entry').forEach(entry => {
+    entry.style.display = 'none';
+  });
+  
+  document.getElementById('show-all-btn').classList.add('active');
+}
+
+function resetSidebarState() {
+  document.querySelectorAll('.category').forEach(category => {
+    category.classList.remove('active');
+  });
+  
+  document.querySelectorAll('.location-entry').forEach(entry => {
+    entry.style.display = 'none';
+  });
+  
+  document.getElementById('show-all-btn').classList.add('active');
+}
+
+function showAllMarkersAndClose() {
+  if (currentLayer && allFeatures.length > 0) {
+    const group = new L.featureGroup(currentLayer.getLayers());
+    map.fitBounds(group.getBounds(), {
+      padding: [20, 20]
+    });
+  }
+  
+  setTimeout(() => {
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('filter-toggle').setAttribute('aria-expanded', 'false');
+  }, 300);
+}
+
+document.addEventListener('click', function(e) {
+  const sidebar = document.getElementById('sidebar');
+  const filterButton = document.getElementById('filter-toggle');
+
+  if (!filterButton.contains(e.target) && !sidebar.contains(e.target)) {
+    if (sidebar.style.display === 'block') {
+      resetSearchResults();
+      sidebar.style.display = 'none';
+      filterButton.setAttribute('aria-expanded', 'false');
+    }
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const sidebar = document.getElementById('sidebar');
+    const detailView = document.getElementById('detail-view');
+    const filterButton = document.getElementById('filter-toggle');
+    
+    if (sidebar.style.display === 'block') {
+      resetSearchResults();
+      sidebar.style.display = 'none';
+      filterButton.setAttribute('aria-expanded', 'false');
+    }
+    if (detailView.style.display === 'block') {
+      detailView.classList.remove('show');
+      setTimeout(() => {
+        detailView.style.display = 'none';
+      }, 300);
+    }
+  }
+});
+
+const map = L.map('map', {
+  fullscreenControl: false,
+  attributionControl: false,
+  zoomControl: true
+}).setView([49.7942, 9.9301], 13);
+
+const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: ''
+});
+
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 20,
+  attribution: ''
+});
+
+osmLayer.addTo(map);
+
+map.on('baselayerchange', function(e) {
+  const attrSpan = document.getElementById('current-attribution');
+  if (e.name === 'Luftbild') {
+    attrSpan.innerHTML = 'Bilddaten: <a href="https://www.esri.com/en-us/home">Esri</a>, Earthstar Geographics, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+  } else {
+    attrSpan.innerHTML = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-Mitwirkende</a>';
+  }
+});
+
+map.whenReady(function() {
+  console.log('Map ist bereit, füge Controls hinzu...');
+  
+  const layerControl = L.control.layers({
+    "Karte": osmLayer,
+    "Luftbild": satelliteLayer
+  }, undefined, { 
+    position: 'topleft',
+    collapsed: true,
+    autoZIndex: true
+  });
+
+  layerControl.addTo(map);
+  console.log('Layer-Control hinzugefügt');
+
+  try {
+    if (typeof L.Control.Fullscreen !== 'undefined') {
+      const fullscreenControl = new L.Control.Fullscreen({ 
+        position: 'topleft',
+        forceSeparateButton: true 
+      });
+      map.addControl(fullscreenControl);
+      console.log('Fullscreen-Control hinzugefügt');
+    } else {
+      createFallbackFullscreenButton();
+    }
+  } catch(error) {
+    console.error('Fullscreen-Control Fehler:', error);
+    createFallbackFullscreenButton();
+  }
+
+  try {
+    const LocationControl = L.Control.extend({
+      options: { position: 'topleft' },
+      onAdd: function() {
+        const div = L.DomUtil.create('div', 'leaflet-control-location leaflet-bar leaflet-control');
+        const btn = L.DomUtil.create('a', 'leaflet-control-location-button leaflet-bar-part', div);
+        btn.href = '#';
+        btn.title = 'Standort ermitteln';
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('aria-label', 'Standort ermitteln');
+        
         L.DomEvent.on(btn, 'click', function (e) {
           L.DomEvent.stopPropagation(e);
           L.DomEvent.preventDefault(e);
+          
           if (!navigator.geolocation) {
             alert('Standortbestimmung wird von diesem Browser nicht unterstützt.');
             return;
           }
+          
+          btn.style.opacity = '0.5';
+          
           navigator.geolocation.getCurrentPosition(pos => {
             const { latitude, longitude } = pos.coords;
-            const marker = L.marker([latitude, longitude]).addTo(map).bindPopup("Du bist hier!").openPopup();
+            L.marker([latitude, longitude]).addTo(map)
+              .bindPopup("Du bist hier!")
+              .openPopup();
             map.setView([latitude, longitude], 16);
-          }, () => {
+            btn.style.opacity = '1';
+          }, (error) => {
+            console.error('Geolocation error:', error);
             alert('Standort konnte nicht bestimmt werden.');
+            btn.style.opacity = '1';
           });
         });
-        return btn;
+        
+        return div;
       },
-      onRemove: function(map) {}
+      onRemove: function() {}
     });
+    
+    map.addControl(new LocationControl());
+    console.log('Location-Control hinzugefügt');
+    
+  } catch(error) {
+    console.error('Location-Control Fehler:', error);
+  }
+});
 
-    L.control.myLocation = function(opts) {
-      return new L.Control.MyLocation(opts);
-    };
-
-    L.control.myLocation({ position: 'topleft' }).addTo(map);
-    const icons = {
-      "Essen & Trinken": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/308/308099.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Sport & Aktivität": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/4163/4163684.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Unterhaltung & Begegnung": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/1778/1778568.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Kultur & Sehenswürdigkeiten": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2667/2667339.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Ausgehen & Nachtleben": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3755/3755631.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Universität & Studium": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3145/3145765.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] }),
-      "Events & Festivals": L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/747/747310.png', iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] })
-    };
-
-    let allFeatures = [], currentLayer = null, markers = [], grouped = {};
-
-    const detailView = document.getElementById('detail-view');
-    const detailTitle = document.getElementById('detail-title');
-    const detailImage = document.getElementById('detail-image');
-    const detailAddress = document.getElementById('detail-address');
-    const detailDescription = document.getElementById('detail-description');
-    const detailOpening = document.getElementById('detail-opening');
-    const detailCost = document.getElementById('detail-cost');
-    const detailAccessible = document.getElementById('detail-accessible');
-    const detailTags = document.getElementById('detail-tags');
-    const detailVideo = document.getElementById('detail-video');
-    const detailClose = document.getElementById('detail-close');
-
-    detailClose.addEventListener('click', () => detailView.style.display = 'none');
-
-    function showDetail(props) {
-      detailTitle.textContent = props.name || "(Kein Titel)";
-      detailAddress.textContent = props.address ? 'Adresse: ' + props.address : "";
-      detailDescription.textContent = props.description || "";
-      detailOpening.textContent = props.opening_hours ? 'Öffnungszeiten: ' + props.opening_hours : "";
-      detailCost.textContent = props.cost ? 'Kosten: ' + props.cost : "";
-      detailAccessible.textContent = props.accessible ? 'Barrierefreiheit: ' + props.accessible : "";
-      detailTags.textContent = props.tags ? 'Tags: ' + props.tags : "";
-      detailImage.src = props.image_url || "";
-      detailImage.style.display = props.image_url ? 'block' : 'none';
-      detailVideo.src = props.video_url || "";
-      detailView.style.display = 'block';
-    }
-
-    function updateMarkers() {
-      if (currentLayer) map.removeLayer(currentLayer);
-      markers = [];
-      currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
-        pointToLayer: (feature, latlng) => {
-          const cat = feature.properties.category;
-          const icon = icons[cat] || undefined;
-          const marker = L.marker(latlng, icon ? { icon } : {});
-          markers.push(marker);
-          return marker;
-        },
-        onEachFeature: (feature, layer) => {
-          layer.on('click', () => showDetail(feature.properties));
+function createFallbackFullscreenButton() {
+  const FallbackFullscreen = L.Control.extend({
+    onAdd: function() {
+      const div = L.DomUtil.create('div', 'leaflet-control-fullscreen leaflet-bar leaflet-control');
+      const btn = L.DomUtil.create('a', 'leaflet-control-fullscreen-button leaflet-bar-part', div);
+      btn.href = '#';
+      btn.title = 'Vollbildmodus';
+      
+      L.DomEvent.on(btn, 'click', function (e) {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        try {
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            document.documentElement.requestFullscreen();
+          }
+        } catch(error) {
+          console.error('Fullscreen error:', error);
         }
-      }).addTo(map);
-    }
-
-    function buildCategoryList() {
-      const container = document.getElementById('location-list');
-      container.innerHTML = '';
-      Object.keys(grouped).forEach(category => {
-        const catDiv = document.createElement('div');
-        catDiv.className = 'category';
-        catDiv.textContent = category;
-        container.appendChild(catDiv);
-        grouped[category].forEach(f => {
-          const locDiv = document.createElement('div');
-          locDiv.className = 'location-entry';
-          locDiv.textContent = f.properties.name;
-          locDiv.onclick = () => {
-            map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 18);
-            showDetail(f.properties);
-          };
-          catDiv.appendChild(locDiv);
-        });
-        catDiv.addEventListener('click', () => {
-          const entries = catDiv.querySelectorAll('.location-entry');
-          entries.forEach(e => {
-            e.style.display = e.style.display === 'block' ? 'none' : 'block';
-          });
-        });
       });
+      
+      return div;
     }
+  });
+  
+  map.addControl(new FallbackFullscreen({ position: 'topleft' }));
+  console.log('Fallback Fullscreen-Control hinzugefügt');
+}
 
-    fetch('data.geojson')
-      .then(response => response.json())
-      .then(data => {
-        allFeatures = data.features;
-        grouped = {};
-        allFeatures.forEach(f => {
-          const cat = f.properties.category || "Sonstiges";
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(f);
-        });
-        updateMarkers();
-        buildCategoryList();
-      })
-      .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+const detailView = document.getElementById('detail-view');
+const detailTitle = document.getElementById('detail-title');
+const detailImage = document.getElementById('detail-image');
+const detailAddress = document.getElementById('detail-address');
+const detailDescription = document.getElementById('detail-description');
+const detailOpening = document.getElementById('detail-opening');
+const detailCost = document.getElementById('detail-cost');
+const detailAccessible = document.getElementById('detail-accessible');
+const detailTags = document.getElementById('detail-tags');
+const detailVideo = document.getElementById('detail-video');
 
-    document.getElementById('search').addEventListener('input', function () {
-      const term = this.value.toLowerCase();
-      document.querySelectorAll('.location-entry').forEach(item => {
-        item.style.display = item.innerText.toLowerCase().includes(term) ? 'block' : 'none';
-      });
+document.getElementById('detail-close').addEventListener('click', () => {
+  detailView.classList.remove('show');
+  setTimeout(() => {
+    detailView.style.display = 'none';
+  }, 300);
+});
+
+function showDetail(props) {
+  detailTitle.textContent = props.name || "(Kein Titel)";
+  
+  if (props.description) {
+    detailDescription.innerHTML = `<h3>Beschreibung</h3><p>${props.description}</p>`;
+  } else {
+    detailDescription.innerHTML = '';
+  }
+  
+  if (props.address) {
+    detailAddress.innerHTML = `<h3>Adresse</h3><p>${props.address}</p>`;
+  } else {
+    detailAddress.innerHTML = '';
+  }
+  
+  if (props.opening_hours) {
+    detailOpening.innerHTML = `<h3>Öffnungszeiten</h3><p>${props.opening_hours}</p>`;
+  } else {
+    detailOpening.innerHTML = '';
+  }
+  
+  if (props.cost) {
+    detailCost.innerHTML = `<h3>Kosten</h3><p>${props.cost}</p>`;
+  } else {
+    detailCost.innerHTML = '';
+  }
+  
+  if (props.accessible) {
+    detailAccessible.innerHTML = `<h3>Barrierefreiheit</h3><p>${props.accessible}</p>`;
+  } else {
+    detailAccessible.innerHTML = '';
+  }
+  
+  if (props.tags) {
+    detailTags.innerHTML = `<h3>Tags</h3><p>${props.tags}</p>`;
+  } else {
+    detailTags.innerHTML = '';
+  }
+  
+  if (props.image_url) {
+    detailImage.src = props.image_url;
+    detailImage.style.display = 'block';
+    detailImage.alt = props.name || 'Bild';
+  } else {
+    detailImage.style.display = 'none';
+  }
+  
+  if (props.video_url) {
+    detailVideo.src = props.video_url;
+    detailVideo.style.display = 'block';
+  } else {
+    detailVideo.style.display = 'none';
+  }
+  
+  detailView.style.display = 'block';
+  setTimeout(() => {
+    detailView.classList.add('show');
+  }, 10);
+  
+  resetSidebarState();
+}
+
+function updateMarkers() {
+  if (currentLayer) {
+    currentLayer.eachLayer(layer => {
+      layer.off();
     });
-  </script>
+    map.removeLayer(currentLayer);
+  }
+  
+  currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
+    pointToLayer: (feature, latlng) => {
+      return L.marker(latlng);
+    },
+    onEachFeature: (feature, layer) => {
+      layer.on('click', () => showDetail(feature.properties));
+    }
+  }).addTo(map);
+}
+
+function buildCategoryList() {
+  const container = document.getElementById('location-list');
+  container.innerHTML = '';
+  
+  const multiCategoryLocations = {
+    "Wohnzimmer Bar": ["Essen & Trinken", "Ausgehen & Nachtleben"],
+    "Waldschänke Dornheim": ["Essen & Trinken", "Ausgehen & Nachtleben"]
+  };
+  
+  const newGrouped = {};
+  
+  allFeatures.forEach(f => {
+    const locationName = f.properties?.name;
+    const originalCategory = f.properties?.category;
+    
+    if (multiCategoryLocations[locationName]) {
+      multiCategoryLocations[locationName].forEach(category => {
+        if (!newGrouped[category]) newGrouped[category] = [];
+        newGrouped[category].push(f);
+      });
+    } else if (originalCategory && originalCategory !== "Ausgehen & Nachtleben/Essen & Trinken") {
+      if (!newGrouped[originalCategory]) newGrouped[originalCategory] = [];
+      newGrouped[originalCategory].push(f);
+    }
+  });
+  
+  Object.keys(newGrouped).forEach(category => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+    catDiv.textContent = category;
+    catDiv.setAttribute('data-category', category);
+    container.appendChild(catDiv);
+    
+    newGrouped[category].forEach(f => {
+      const locDiv = document.createElement('div');
+      locDiv.className = 'location-entry';
+      locDiv.textContent = f.properties?.name || 'Unbekannter Ort';
+      
+      const clickHandler = () => {
+        if (f.geometry?.coordinates) {
+          map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 18);
+          showDetail(f.properties);
+          
+          document.getElementById('sidebar').style.display = 'none';
+          document.getElementById('filter-toggle').setAttribute('aria-expanded', 'false');
+        }
+      };
+      
+      locDiv.onclick = clickHandler;
+      catDiv.appendChild(locDiv);
+    });
+    
+    catDiv.addEventListener('click', (e) => {
+      if (e.target.classList.contains('location-entry')) {
+        return;
+      }
+      
+      const entries = catDiv.querySelectorAll('.location-entry');
+      const isCurrentlyActive = catDiv.classList.contains('active');
+      
+      document.querySelectorAll('.category').forEach(otherCat => {
+        if (otherCat !== catDiv) {
+          otherCat.classList.remove('active');
+          otherCat.querySelectorAll('.location-entry').forEach(entry => {
+            entry.style.display = 'none';
+          });
+        }
+      });
+      
+      if (isCurrentlyActive) {
+        catDiv.classList.remove('active');
+        entries.forEach(e => {
+          e.style.display = 'none';
+        });
+      } else {
+        catDiv.classList.add('active');
+        entries.forEach(e => {
+          e.style.display = 'block';
+        });
+      }
+    });
+  });
+}
+
+fetch('data.geojson')
+  .then(resp => {
+    if (!resp.ok) {
+      throw new Error(`HTTP error! status: ${resp.status}`);
+    }
+    return resp.json();
+  })
+  .then(data => {
+    if (!data || !data.features) {
+      throw new Error('Invalid GeoJSON data structure');
+    }
+    
+    allFeatures = data.features;
+    grouped = {};
+    
+    allFeatures.forEach(f => {
+      if (f.properties && f.geometry && f.geometry.coordinates) {
+        const cat = f.properties.category || "Sonstiges";
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(f);
+      } else {
+        console.warn('Invalid feature found:', f);
+      }
+    });
+    
+    updateMarkers();
+    buildCategoryList();
+    console.log('GeoJSON-Daten erfolgreich geladen');
+  })
+  .catch(err => {
+    console.error("GeoJSON konnte nicht geladen werden:", err);
+    const container = document.getElementById('location-list');
+    container.innerHTML = '<p style="color: red;">Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>';
+  });
+
+const debouncedSearch = debounce(function(term) {
+  const searchTerm = term.toLowerCase();
+  const categories = document.querySelectorAll('.category');
+  
+  categories.forEach(category => {
+    const entries = category.querySelectorAll('.location-entry');
+    let hasVisibleEntries = false;
+    
+    entries.forEach(item => {
+      const locationName = item.textContent.toLowerCase();
+      if (locationName.includes(searchTerm)) {
+        item.style.display = 'block';
+        hasVisibleEntries = true;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    
+    category.style.display = hasVisibleEntries ? 'block' : 'none';
+  });
+}, 300);
+
+document.getElementById('search').addEventListener('input', function() {
+  debouncedSearch(this.value);
+});
+</script>
+
 </body>
 </html>
