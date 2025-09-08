@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <title>Würzburg interaktiv</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="utf-8" />
+<title>Würzburg interaktiv</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="description" content="Interaktive Würzburg-Karte: Suche & Filter für Essen, Kultur, Nachtleben & Uni – mit Detailansichten, Bildern und Tipps.">
+<meta name="robots" content="index,follow, max-image-preview:large">
+<link rel="canonical" href="">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Würzburg interaktiv">
+<meta property="og:title" content="Würzburg interaktiv">
+<meta property="og:description" content="Interaktive Würzburg-Karte: Finde schnell die besten Spots – inkl. Suche, Filtern und Detailansichten.">
+<meta property="og:url" content="">
+<meta property="og:image" content="">
+<meta property="og:image:alt" content="Vorschaugrafik der interaktiven Würzburg-Karte">
+<meta property="og:locale" content="de_DE">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Würzburg interaktiv">
+<meta name="twitter:description" content="Interaktive Würzburg-Karte mit Suche, Filtern und Detailansichten.">
+<meta name="twitter:image" content="">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
     html, body {
       height: 100vh;
@@ -545,6 +565,14 @@
   }
 }
 
+#orte-index-min {
+  max-width: 980px;
+  margin: 24px auto 84px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  padding: 16px 18px;
+}
   </style>
 </head>
 <body>
@@ -591,9 +619,9 @@
 </div>
 
 <footer>
-  <a href="#" onclick="alert('Impressum kommt bald.')">Impressum</a>
-  <span>|</span>
-  <a href="#" onclick="alert('Datenschutz kommt bald.')">Datenschutz</a>
+  <a href="impressum.html">Impressum</a>
+  <span aria-hidden="true">|</span>
+  <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>
 </footer>
 
 <div id="custom-attribution">
@@ -876,43 +904,43 @@ document.getElementById('detail-close').addEventListener('click', () => {
 
 function showDetail(props) {
   detailTitle.textContent = props.name || "(Kein Titel)";
-  
+
   if (props.description) {
     detailDescription.innerHTML = `<h3>Beschreibung</h3><p>${props.description}</p>`;
   } else {
     detailDescription.innerHTML = '';
   }
-  
+
   if (props.address) {
     detailAddress.innerHTML = `<h3>Adresse</h3><p>${props.address}</p>`;
   } else {
     detailAddress.innerHTML = '';
   }
-  
+
   if (props.opening_hours) {
     detailOpening.innerHTML = `<h3>Öffnungszeiten</h3><p>${props.opening_hours}</p>`;
   } else {
     detailOpening.innerHTML = '';
   }
-  
+
   if (props.cost) {
     detailCost.innerHTML = `<h3>Kosten</h3><p>${props.cost}</p>`;
   } else {
     detailCost.innerHTML = '';
   }
-  
+
   if (props.accessible) {
     detailAccessible.innerHTML = `<h3>Barrierefreiheit</h3><p>${props.accessible}</p>`;
   } else {
     detailAccessible.innerHTML = '';
   }
-  
+
   if (props.tags) {
     detailTags.innerHTML = `<h3>Tags</h3><p>${props.tags}</p>`;
   } else {
     detailTags.innerHTML = '';
   }
-  
+
   if (props.image_url) {
     detailImage.src = props.image_url;
     detailImage.style.display = 'block';
@@ -920,20 +948,29 @@ function showDetail(props) {
   } else {
     detailImage.style.display = 'none';
   }
-  
+
   if (props.video_url) {
     detailVideo.src = props.video_url;
     detailVideo.style.display = 'block';
   } else {
     detailVideo.style.display = 'none';
+    try { detailVideo.src = ''; } catch(_) {}
   }
-  
+
   detailView.style.display = 'block';
   setTimeout(() => {
+    scrollDetailToTop();
     detailView.classList.add('show');
   }, 10);
-  
+
   resetSidebarState();
+}
+
+function scrollDetailToTop() {
+  detailView.scrollTop = 0;
+  try {
+    detailView.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (_) { /* ignore */ }
 }
 
 function updateMarkers() {
@@ -943,7 +980,7 @@ function updateMarkers() {
     });
     map.removeLayer(currentLayer);
   }
-  
+
   currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
     pointToLayer: (feature, latlng) => {
       return L.marker(latlng);
@@ -957,18 +994,18 @@ function updateMarkers() {
 function buildCategoryList() {
   const container = document.getElementById('location-list');
   container.innerHTML = '';
-  
+
   const multiCategoryLocations = {
     "Wohnzimmer Bar": ["Essen & Trinken", "Ausgehen & Nachtleben"],
     "Waldschänke Dornheim": ["Essen & Trinken", "Ausgehen & Nachtleben"]
   };
-  
+
   const newGrouped = {};
-  
+
   allFeatures.forEach(f => {
     const locationName = f.properties?.name;
     const originalCategory = f.properties?.category;
-    
+
     if (multiCategoryLocations[locationName]) {
       multiCategoryLocations[locationName].forEach(category => {
         if (!newGrouped[category]) newGrouped[category] = [];
@@ -979,41 +1016,40 @@ function buildCategoryList() {
       newGrouped[originalCategory].push(f);
     }
   });
-  
+
   Object.keys(newGrouped).forEach(category => {
     const catDiv = document.createElement('div');
     catDiv.className = 'category';
     catDiv.textContent = category;
     catDiv.setAttribute('data-category', category);
     container.appendChild(catDiv);
-    
+
     newGrouped[category].forEach(f => {
       const locDiv = document.createElement('div');
       locDiv.className = 'location-entry';
       locDiv.textContent = f.properties?.name || 'Unbekannter Ort';
-      
+
       const clickHandler = () => {
         if (f.geometry?.coordinates) {
           map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 18);
           showDetail(f.properties);
-          
           document.getElementById('sidebar').style.display = 'none';
           document.getElementById('filter-toggle').setAttribute('aria-expanded', 'false');
         }
       };
-      
+
       locDiv.onclick = clickHandler;
       catDiv.appendChild(locDiv);
     });
-    
+
     catDiv.addEventListener('click', (e) => {
       if (e.target.classList.contains('location-entry')) {
         return;
       }
-      
+
       const entries = catDiv.querySelectorAll('.location-entry');
       const isCurrentlyActive = catDiv.classList.contains('active');
-      
+
       document.querySelectorAll('.category').forEach(otherCat => {
         if (otherCat !== catDiv) {
           otherCat.classList.remove('active');
@@ -1022,20 +1058,78 @@ function buildCategoryList() {
           });
         }
       });
-      
+
       if (isCurrentlyActive) {
         catDiv.classList.remove('active');
-        entries.forEach(e => {
-          e.style.display = 'none';
-        });
+        entries.forEach(e => { e.style.display = 'none'; });
       } else {
         catDiv.classList.add('active');
-        entries.forEach(e => {
-          e.style.display = 'block';
-        });
+        entries.forEach(e => { e.style.display = 'block'; });
       }
     });
   });
+}
+
+function slugify(str) {
+  return (str || '')
+    .toString()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'')
+    .slice(0,80);
+}
+
+function injectPlacesJSONLD(features, maxItems = 500) {
+  if (!Array.isArray(features) || !features.length) return;
+
+  const canonical = document.querySelector('link[rel="canonical"]')?.href || location.href;
+  const baseUrl = canonical.replace(/#.*$/, '');
+
+  const sorted = [...features].sort((a,b) => {
+    const an = (a?.properties?.name || '').toLocaleLowerCase();
+    const bn = (b?.properties?.name || '').toLocaleLowerCase();
+    return an.localeCompare(bn);
+  }).slice(0, maxItems);
+
+  const itemListElement = sorted.map((f, i) => {
+    const p = f?.properties || {};
+    const [lng, lat] = f?.geometry?.coordinates || [];
+    const slug = slugify(p.name || `${lat}-${lng}`);
+    const url = baseUrl + '#place-' + slug;
+
+    const place = {
+      "@type": "Place",
+      "name": p.name || "Unbekannter Ort",
+      "url": url
+    };
+
+    if (p.address) place.address = p.address;
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      place.geo = { "@type": "GeoCoordinates", latitude: lat, longitude: lng };
+    }
+    if (p.category) place.additionalType = p.category;
+    if (p.description) place.description = p.description;
+
+    return { "@type": "ListItem", position: i + 1, item: place };
+  });
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        "@id": baseUrl + "#places",
+        "name": "Orte in Würzburg interaktiv",
+        "itemListElement": itemListElement
+      }
+    ]
+  };
+
+  const s = document.createElement('script');
+  s.type = 'application/ld+json';
+  s.textContent = JSON.stringify(jsonLd);
+  document.head.appendChild(s);
 }
 
 fetch('data.geojson')
@@ -1065,6 +1159,7 @@ fetch('data.geojson')
     
     updateMarkers();
     buildCategoryList();
+    injectPlacesJSONLD(allFeatures); // ← JSON-LD ins <head> schreiben
     console.log('GeoJSON-Daten erfolgreich geladen');
   })
   .catch(err => {
