@@ -34,33 +34,45 @@
       font-family: sans-serif;
     }
     
-    #map {
-      height: 100vh;
-      width: 100vw;
-      position: relative;
-      z-index: 1;
-    }
+#map{
+  height: 100dvh;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
     
-    #detail-view {
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: 420px;
-      height: 100vh;
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
-      overflow-y: auto;
-      padding: 0;
-      z-index: 9999;
-      display: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+#detail-view{
+  position: fixed;
+  right: 0;
+  top: 0;
+  scrollbar-gutter: stable;
+  width: var(--panel-target-width);
+  box-sizing: border-box;
+  height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 9999;
+  display: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(0.4,0,0.2,1);
+  will-change: width, transform;
+}
+
+    #detail-inner{
+      position: relative;
+      width: 100%;
+      height: auto;
+      transform: none;
+      transform-origin: initial;
     }
 
-    #detail-view.show {
-      transform: translateX(0);
-    }
+    html { -webkit-text-size-adjust: 100%; }
+
+    #detail-view.show { transform: translateX(0); }
 
     #detail-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -97,23 +109,19 @@
       transition: all 0.2s ease;
       backdrop-filter: blur(10px);
     }
+    #detail-close:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
 
-    #detail-close:hover {
-      background: rgba(255,255,255,0.3);
-      transform: scale(1.1);
-    }
+    #detail-content { padding: 0 20px 20px; }
 
-    #detail-content {
-      padding: 0 20px 20px;
-    }
-
-    #detail-image {
+    #detail-image{
       width: 100%;
-      height: 200px;
+      height: auto;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 16px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+      background: #eef1f5;
     }
 
     .detail-section {
@@ -124,10 +132,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       border-left: 4px solid #667eea;
     }
-
-    .detail-section:empty {
-      display: none;
-    }
+    .detail-section:empty { display: none; }
 
     .detail-section h3 {
       margin: 0 0 8px 0;
@@ -137,12 +142,7 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
-    .detail-section p {
-      margin: 0;
-      line-height: 1.5;
-      color: #333;
-    }
+    .detail-section p { margin: 0; line-height: 1.5; color: #333; }
 
     .detail-section.address::before { content: "📍 "; }
     .detail-section.hours::before { content: "🕒 "; }
@@ -158,22 +158,10 @@
       margin-bottom: 15px;
     }
 
-    #detail-view::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #detail-view::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-
-    #detail-view::-webkit-scrollbar-thumb {
-      background: #667eea;
-      border-radius: 3px;
-    }
-
-    #detail-view::-webkit-scrollbar-thumb:hover {
-      background: #764ba2;
-    }
+    #detail-view::-webkit-scrollbar { width: 6px; }
+    #detail-view::-webkit-scrollbar-track { background: #f1f1f1; }
+    #detail-view::-webkit-scrollbar-thumb { background: #667eea; border-radius: 3px; }
+    #detail-view::-webkit-scrollbar-thumb:hover { background: #764ba2; }
     
     .category { 
       cursor: pointer; 
@@ -186,13 +174,7 @@
       font-size: 13px;
       font-weight: 400;
     }
-
-    .category:hover {
-      background-color: #f0f0f0;
-      border-color: #ccc;
-      transform: translateX(2px);
-    }
-
+    .category:hover { background-color: #f0f0f0; border-color: #ccc; transform: translateX(2px); }
     .category.active {
       background-color: #f5f5f5;
       border-color: #999;
@@ -208,10 +190,7 @@
       font-size: 13px;
       font-weight: 400;
     }
-    
-    .location-entry:hover { 
-      background-color: #eee; 
-    }
+    .location-entry:hover { background-color: #eee; }
 
     #filter-controls {
       margin-bottom: 15px;
@@ -220,282 +199,165 @@
     }
 
     #show-all-btn {
-      background: #6c757d;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background: #6c757d; color: white; border: none; padding: 6px 12px;
+      border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease;
     }
-
-    #show-all-btn:hover {
-      background: #5a6268;
-    }
-
-    #show-all-btn.active {
-      background: #495057;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
+    #show-all-btn:hover { background: #5a6268; }
+    #show-all-btn.active { background: #495057; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
     #filter-toggle {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      background: #e63950;
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      cursor: pointer;
-      pointer-events: auto;
-      user-select: none;
-      transition: background-color 0.2s ease;
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 10000; background: #e63950; border: none; color: white;
+      padding: 8px 16px; border-radius: 12px; font-size: 14px; display: flex;
+      align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: pointer; pointer-events: auto; user-select: none; transition: background-color 0.2s ease;
     }
+    #filter-toggle:hover { background: #d32f2f; }
+    #filter-toggle:focus { outline: 2px solid rgba(230, 57, 80, 0.5); outline-offset: 2px; }
+    #filter-toggle svg { width: 20px; height: 20px; fill: white; }
 
-    #filter-toggle:hover {
-      background: #d32f2f;
-    }
-
-    #filter-toggle:focus {
-      outline: 2px solid rgba(230, 57, 80, 0.5);
-      outline-offset: 2px;
-    }
-
-    #filter-toggle svg {
-      width: 20px;
-      height: 20px;
-      fill: white;
+    :root{
+      --sidebar-width: 420px;
+      --sidebar-scale-desktop: .8;
+      --sidebar-gutter: 12px;
+      --panel-target-width: min(
+        calc(var(--sidebar-width) * var(--sidebar-scale-desktop)),
+        calc(100vw - var(--sidebar-gutter))
+      );
+      --sidebar-scale: calc(var(--panel-target-width) / var(--sidebar-width));
     }
 
     #sidebar {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 999999;
-      width: 320px;
-      max-width: 90vw;
-      background: white;
-      padding: 15px;
-      display: none;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-      max-height: 70vh;
-      overflow-y: auto;
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 999999; width: 320px; max-width: 90vw; background: white; padding: 15px;
+      display: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-height: 70vh; overflow-y: auto;
     }
-    
     #sidebar input[type="text"] {
-      width: 100%;
-      padding: 10px 15px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 12px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-      box-sizing: border-box;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      width: 100%; padding: 10px 15px; margin-bottom: 15px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 12px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-
     #sidebar input[type="text"]:focus {
-      outline: none;
-      border-color: #e63950;
-      box-shadow: 0 0 0 3px rgba(230, 57, 80, 0.1);
+      outline: none; border-color: #e63950; box-shadow: 0 0 0 3px rgba(230, 57, 80, 0.1);
     }
 
-    #location-list {
-      max-height: 50vh;
-      overflow-y: auto;
-      border-radius: 6px;
-    }
+    #location-list { max-height: 50vh; overflow-y: auto; border-radius: 6px; }
 
+#brand-logos{
+  position: fixed;
+  left: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  display: flex;
+  gap: 12px;
+  z-index: 11999;
+}
+#brand-logos .brand-logo{ height: 96px; width: auto; display: block; }
+@media (max-width: 768px){ #brand-logos .brand-logo{ height: 72px; } }
+@media (max-width: 480px){ #brand-logos .brand-logo{ height: 56px; } }
+@media (max-width: 360px){ #brand-logos .brand-logo{ height: 48px; } }
+
+@media (max-width: 768px){
+  #brand-logos{
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 10px;
+    bottom: calc(var(--footer-h, 0px) + env(safe-area-inset-bottom, 0px) + 8px);
+  }
+}
     footer {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 8px;
-      min-width: unset;
-      max-width: 90vw;
-      padding: 2px 16px;
-      background: rgba(240,240,245,0.65);
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(40,42,60,0.04);
-      border: none;
-      text-align: center;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      color: #000;
-      z-index: 1200;
-      letter-spacing: 0.05em;
-      opacity: 0.85;
-      transition: background 0.2s;
+      position: fixed; left: 50%; transform: translateX(-50%); bottom: 8px;
+      min-width: unset; max-width: 90vw; padding: 2px 16px;
+      background: rgba(240,240,245,0.65); border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(40,42,60,0.04); border: none; text-align: center; font-size: 11px;
+      display: flex; align-items: center; justify-content: center; gap: 14px; color: #000; z-index: 12000;
+      letter-spacing: 0.05em; opacity: 0.85; transition: background 0.2s;
     }
-
-    footer:hover {
-      background: rgba(240,240,245,0.95);
-    }
-
+    footer:hover { background: rgba(240,240,245,0.95); }
     footer a {
-      color: #000;
-      font-weight: 400;
-      text-decoration: underline dotted;
-      font-size: 11px;
-      margin: 0 4px;
-      opacity: 0.9;
-      transition: opacity 0.2s;
+      color: #000; font-weight: 400; text-decoration: underline dotted; font-size: 11px;
+      margin: 0 4px; opacity: 0.9; transition: opacity 0.2s;
     }
+    footer a:hover { opacity: 1; color: #000; }
 
-    footer a:hover {
-      opacity: 1;
-      color: #000;
-    }
-
-    .leaflet-control-attribution {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
-
-    .leaflet-bottom.leaflet-right {
-      display: none !important;
-    }
+    .leaflet-control-attribution { display: none !important; visibility: hidden !important; opacity: 0 !important; }
+    .leaflet-bottom.leaflet-right { display: none !important; }
 
     #custom-attribution {
-      position: fixed !important;
-      bottom: 8px !important;
-      right: 8px !important;
-      background: rgba(240,240,245,0.65) !important;
-      color: #000 !important;
-      font-size: 11px !important;
-      padding: 3px 10px !important;
-      border-radius: 10px !important;
-      z-index: 1000 !important;
-      pointer-events: auto !important;
-      opacity: 0.85 !important;
-      transition: background 0.2s !important;
-      max-width: none !important;
-      white-space: nowrap !important;
+      position: fixed !important; bottom: 8px !important; right: 8px !important;
+      background: rgba(240,240,245,0.65) !important; color: #000 !important;
+      font-size: 11px !important; padding: 3px 10px !important; border-radius: 10px !important;
+      z-index: 12000!important; pointer-events: auto !important; opacity: 0.85 !important;
+      transition: background 0.2s !important; max-width: none !important; white-space: nowrap !important;
       box-shadow: 0 1px 5px rgba(0,0,0,0.2) !important;
     }
-
-    #custom-attribution:hover {
-      background: rgba(240,240,245,0.95) !important;
-    }
-
+    #custom-attribution:hover { background: rgba(240,240,245,0.95) !important; }
     #custom-attribution a {
-      color: #000 !important;
-      text-decoration: underline dotted !important;
-      opacity: 0.9 !important;
-      transition: opacity 0.2s !important;
-      margin: 0 2px !important;
-      display: inline-flex !important;
-      align-items: center !important;
+      color: #000 !important; text-decoration: underline dotted !important; opacity: 0.9 !important;
+      transition: opacity 0.2s !important; margin: 0 2px !important; display: inline-flex !important; align-items: center !important;
     }
+    #custom-attribution a:hover { opacity: 1 !important; }
+    #custom-attribution svg { margin-right: 4px !important; }
 
-    #custom-attribution a:hover {
-      opacity: 1 !important;
-    }
-
-    #custom-attribution svg {
-      margin-right: 4px !important;
-    }
-
-    .leaflet-control-container .leaflet-top.leaflet-left {
-      margin: 10px;
-    }
-
-    .leaflet-control {
-      margin-bottom: 10px !important;
-      border-radius: 4px !important;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
-      border: none !important;
-    }
-
-    .leaflet-control-zoom {
-      background: white !important;
-    }
-
+    .leaflet-control-container .leaflet-top.leaflet-left { margin: 10px; }
+    .leaflet-control { margin-bottom: 10px !important; border-radius: 4px !important; box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important; border: none !important; }
+    .leaflet-control-zoom { background: white !important; }
     .leaflet-control-zoom a {
-      width: 30px !important;
-      height: 30px !important;
-      line-height: 30px !important;
-      text-align: center !important;
-      background: white !important;
-      color: #333 !important;
-      font-size: 18px !important;
-      font-weight: bold !important;
-      border: none !important;
+      width: 30px !important; height: 30px !important; line-height: 30px !important; text-align: center !important;
+      background: white !important; color: #333 !important; font-size: 18px !important; font-weight: bold !important; border: none !important;
       border-bottom: 1px solid #ccc !important;
     }
+    .leaflet-control-zoom a:hover { background: #f4f4f4 !important; }
+    .leaflet-control-zoom-out { border-bottom: none !important; }
 
-    .leaflet-control-zoom a:hover {
-      background: #f4f4f4 !important;
-    }
-
-    .leaflet-control-zoom-out {
-      border-bottom: none !important;
-    }
-
-    .leaflet-control-layers {
-      background: white !important;
-      padding: 0 !important;
-      min-width: 30px !important;
-      min-height: 30px !important;
-    }
-
+    .leaflet-control-layers { background: white !important; padding: 0 !important; min-width: 30px !important; min-height: 30px !important; }
     .leaflet-control-layers-toggle {
-      width: 30px !important;
-      height: 30px !important;
-      background: white !important;
+      width: 30px !important; height: 30px !important; background: white !important;
       background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27L11.99 18.54zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z'/%3E%3C/svg%3E") !important;
-      background-size: 18px 18px !important;
-      background-position: center !important;
-      background-repeat: no-repeat !important;
-      border: none !important;
+      background-size: 18px 18px !important; background-position: center !important; background-repeat: no-repeat !important; border: none !important;
     }
-
-    .leaflet-control-layers-toggle:hover {
-      background-color: #f4f4f4 !important;
-    }
-
+    .leaflet-control-layers-toggle:hover { background-color: #f4f4f4 !important; }
     .leaflet-control-layers-list {
-      background: white !important;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
-      border-radius: 4px !important;
-      padding: 8px !important;
-      margin-top: 2px !important;
-      min-width: 120px !important;
+      background: white !important; box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important; border-radius: 4px !important;
+      padding: 8px !important; margin-top: 2px !important; min-width: 120px !important;
     }
+    .leaflet-control-layers-list label { font-size: 12px !important; margin: 4px 0 !important; cursor: pointer !important; display: block !important; }
 
-    .leaflet-control-layers-list label {
-      font-size: 12px !important;
-      margin: 4px 0 !important;
-      cursor: pointer !important;
-      display: block !important;
-    }
+    .leaflet-control-lang {
+  background: white !important;
+  width: 30px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important;
+}
 
-    .leaflet-control-fullscreen {
-      background: white !important;
-      width: 30px !important;
-      height: 30px !important;
-    }
+.leaflet-control-lang a {
+  display: block;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  text-align: center !important;
+  background: white !important;
+  color: #333 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  border-bottom: 1px solid #ccc !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
 
+.leaflet-control-lang a:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-control-lang a.active {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+    .leaflet-control-fullscreen { background: white !important; width: 30px !important; height: 30px !important; }
     .leaflet-control-fullscreen-button {
-      width: 30px !important;
-      height: 30px !important;
-      background: white !important;
+      width: 30px !important; height: 30px !important; background: white !important;
       background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'/%3E%3C/svg%3E") !important;
       background-size: 18px 18px !important;
       background-position: center !important;
@@ -527,51 +389,14 @@
       border-radius: 4px !important;
     }
 
-    .leaflet-control-location-button:hover {
-      background-color: #f4f4f4 !important;
-    }
+    .leaflet-control-location-button:hover { background-color: #f4f4f4 !important; }
 
-@media (max-width: 768px) {
-  #detail-view {
-    width: 100vw !important;
-    left: 0;
-    z-index: 15000 !important;  /* ← HÖCHSTE Priorität */
-  }
-  
-  #sidebar {
-    width: 95vw;
-    max-width: 95vw;
-  }
-  
-  #filter-toggle {
-    padding: 10px 16px;
-    font-size: 14px;
-    z-index: 8000 !important;   /* ← NIEDRIGER als Detail-View */
-  }
-  
-  footer {
-    font-size: 9px;
-    padding: 2px 8px;
-    bottom: 35px !important;
-    max-width: 80vw;
-    gap: 8px;
-  }
-  
-  #custom-attribution {
-    font-size: 8px !important;
-    padding: 2px 6px !important;
-    bottom: 8px !important;
-    right: 4px !important;
-  }
-}
-
-#orte-index-min {
-  max-width: 980px;
-  margin: 24px auto 84px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  padding: 16px 18px;
+@media (max-width: 768px){
+  :root { --sidebar-gutter: 0px; }
+  #sidebar { width: 95vw; max-width: 95vw; }
+  #filter-toggle { padding: 10px 16px; font-size: 14px; z-index: 8000 !important; }
+  footer { font-size: 9px; padding: 2px 8px; bottom: 35px !important; max-width: 80vw; gap: 8px; }
+  #custom-attribution { font-size: 8px !important; padding: 2px 6px !important; bottom: 8px !important; right: 4px !important; }
 }
   </style>
 </head>
@@ -598,22 +423,35 @@
 
   <div id="map"></div>
 
+  <div id="brand-logos" aria-label="Logos">
+    <img src="/assets/logo.png" alt="Catching Card" class="brand-logo">
+    <img src="/assets/mp.png"   alt="Medienpsychologie"   class="brand-logo">
+  </div>
+
   <div id="detail-view" role="dialog" aria-labelledby="detail-title">
-    <div id="detail-header">
-      <h2 id="detail-title"></h2>
-      <button id="detail-close" tabindex="0" aria-label="Detailansicht schließen">&times;</button>
-    </div>
-    
-    <div id="detail-content">
-      <img id="detail-image" src="" alt="" style="display: none;">
-      <iframe id="detail-video" src="" allowfullscreen style="display: none;"></iframe>
-      
-      <div id="detail-description" class="detail-section description"></div>
-      <div id="detail-address" class="detail-section address"></div>
-      <div id="detail-opening" class="detail-section hours"></div>
-      <div id="detail-cost" class="detail-section cost"></div>
-      <div id="detail-accessible" class="detail-section accessible"></div>
-      <div id="detail-tags" class="detail-section tags"></div>
+    <div id="detail-inner">
+      <div id="detail-header">
+        <h2 id="detail-title"></h2>
+        <button id="detail-close" tabindex="0" aria-label="Detailansicht schließen">&times;</button>
+      </div>
+
+      <div id="detail-content">
+        <img id="detail-image"
+          loading="lazy"
+          decoding="async"
+          width="960"
+          height="540"
+          alt="">
+          
+        <iframe id="detail-video" src="" allowfullscreen style="display:none;"></iframe>
+
+        <div id="detail-description" class="detail-section description"></div>
+        <div id="detail-address" class="detail-section address"></div>
+        <div id="detail-opening" class="detail-section hours"></div>
+        <div id="detail-cost" class="detail-section cost"></div>
+        <div id="detail-accessible" class="detail-section accessible"></div>
+        <div id="detail-tags" class="detail-section tags"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -623,6 +461,196 @@
   <span aria-hidden="true">|</span>
   <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>
 </footer>
+
+<script>
+  const I18N = {
+    de: {
+      lang: { de: "Deutsch", en: "Englisch" },
+      filter: { label: "Suchen / Filtern", title: "Suchen / Filtern", showAll: "Alle anzeigen" },
+      search: { placeholder: "Ort suchen...", aria: "Suchfeld für Orte" },
+      fullscreen: { title: "Vollbildmodus" },
+      geo: {
+        title: "Standort ermitteln",
+        unsupported: "Standortbestimmung wird von diesem Browser nicht unterstützt.",
+        failed: "Standort konnte nicht bestimmt werden.",
+        here: "Du bist hier!"
+      },
+      details: {
+        description: "Beschreibung",
+        address: "Adresse",
+        opening: "Öffnungszeiten",
+        cost: "Kosten",
+        accessible: "Barrierefreiheit",
+        tags: "Tags",
+        untitled: "(Kein Titel)",
+        close: "Detailansicht schließen"
+      },
+      baselayer: {
+        map: "Karte",
+        satellite: "Luftbild",
+        attr_osm: "© OpenStreetMap-Mitwirkende",
+        attr_sat: "Bilddaten: Esri, Earthstar Geographics, OpenStreetMap"
+      },
+      footer: { imprint: "Impressum", privacy: "Datenschutzerklärung" }
+    },
+    en: {
+      lang: { de: "German", en: "English" },
+      filter: { label: "Search / Filter", title: "Search / Filter", showAll: "Show all" },
+      search: { placeholder: "Search place...", aria: "Search field for places" },
+      fullscreen: { title: "Fullscreen" },
+      geo: {
+        title: "Locate me",
+        unsupported: "Geolocation is not supported by this browser.",
+        failed: "Couldn’t get your location.",
+        here: "You’re here!"
+      },
+      details: {
+        description: "Description",
+        address: "Address",
+        opening: "Opening hours",
+        cost: "Costs",
+        accessible: "Accessibility",
+        tags: "Tags",
+        untitled: "(No title)",
+        close: "Close detail view"
+      },
+      baselayer: {
+        map: "Map",
+        satellite: "Satellite",
+        attr_osm: "© OpenStreetMap contributors",
+        attr_sat: "Imagery: Esri, Earthstar Geographics, OpenStreetMap"
+      },
+      footer: { imprint: "Imprint", privacy: "Privacy policy" }
+    }
+  };
+
+  let LANG = localStorage.getItem("ui_lang") ||
+             (((navigator.language || "").toLowerCase().startsWith("de")) ? "de" : "en");
+  if (LANG !== "de" && LANG !== "en") LANG = "de";
+
+  function t(path) {
+    const parts = path.split(".");
+    let cur = I18N[LANG];
+    for (const p of parts) {
+      if (!cur || typeof cur !== "object" || !(p in cur)) return path;
+      cur = cur[p];
+    }
+    return cur;
+  }
+
+  function updateUIStrings() {
+    document.documentElement.lang = LANG;
+
+    const ft = document.getElementById("filter-toggle");
+    if (ft) {
+      ft.setAttribute("title", t("filter.title"));
+      ft.querySelector("span")?.replaceChildren(document.createTextNode(t("filter.label")));
+    }
+
+    const showAllBtn = document.getElementById("show-all-btn");
+    if (showAllBtn) showAllBtn.textContent = t("filter.showAll");
+
+    const search = document.getElementById("search");
+    if (search) {
+      search.placeholder = t("search.placeholder");
+      search.setAttribute("aria-label", t("search.aria"));
+    }
+
+    const closeBtn = document.getElementById("detail-close");
+    if (closeBtn) closeBtn.setAttribute("aria-label", t("details.close"));
+
+    const geoBtn = document.querySelector(".leaflet-control-location-button");
+    if (geoBtn) {
+      geoBtn.setAttribute("title", t("geo.title"));
+      geoBtn.setAttribute("aria-label", t("geo.title"));
+    }
+
+    const fsBtn = document.querySelector(".leaflet-control-fullscreen-button");
+    if (fsBtn) fsBtn.setAttribute("title", t("fullscreen.title"));
+
+    document.getElementById("btn-lang-de")?.classList.toggle("active", LANG === "de");
+    document.getElementById("btn-lang-en")?.classList.toggle("active", LANG === "en");
+
+    refreshAttribution();
+
+    const footer = document.querySelector("footer");
+    if (footer) {
+      const links = footer.querySelectorAll("a");
+      if (links[0]) {
+        links[0].textContent = t("footer.imprint");
+        links[0].setAttribute("aria-label", t("footer.imprint"));
+      }
+      if (links[1]) {
+        links[1].textContent = t("footer.privacy");
+        links[1].setAttribute("aria-label", t("footer.privacy"));
+      }
+    }
+
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    LANG = code;
+    localStorage.setItem("ui_lang", code);
+    updateUIStrings();
+    buildCategoryList();
+    translateOpenUI();
+
+    function translateOpenUI() {
+
+  if (detailView && detailView.style.display === 'block' && lastDetailProps) {
+    showDetail(lastDetailProps);
+  }
+
+  const container = document.getElementById('location-list');
+  if (!container) return;
+
+  const openCats = new Set(
+    Array.from(container.querySelectorAll('.category.active')).map(el => el.dataset.category)
+  );
+  const scrollTop = container.scrollTop;
+
+  buildCategoryList();
+
+  container.querySelectorAll('.category').forEach(cat => {
+    if (openCats.has(cat.dataset.category)) {
+      cat.classList.add('active');
+      cat.querySelectorAll('.location-entry').forEach(e => { e.style.display = 'block'; });
+    }
+  });
+  container.scrollTop = scrollTop;
+}
+
+  }
+
+    function h3(key) { return '<h3>' + t('details.' + key) + '</h3>'; }
+
+    function pickLang(props, base) { if (!props) return ""; const v = props[base + "_" + LANG]; if (v && String(v).trim()) return v; return props[base] || ""; }
+
+  function refreshAttribution(usingSatellite) {
+    const el = document.getElementById("current-attribution");
+    if (!el) return;
+    if (usingSatellite === true) {
+      el.innerHTML = t("baselayer.attr_sat")
+        .replace("Esri", '<a href="https://www.esri.com/en-us/home">Esri</a>')
+        .replace("OpenStreetMap", '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+    } else {
+      el.innerHTML = t("baselayer.attr_osm")
+        .replace("OpenStreetMap", '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+    }
+  }
+
+  function setFooterVar(){
+    const f = document.querySelector('footer');
+    const cs = f ? getComputedStyle(f) : null;
+    const bottom = cs ? parseFloat(cs.bottom) || 0 : 0;
+    const height = f ? f.offsetHeight : 0;
+    const clearance = bottom + height + 8;
+    document.documentElement.style.setProperty('--footer-h', clearance + 'px');
+  }
+  window.addEventListener('load', setFooterVar);
+  window.addEventListener('resize', setFooterVar);
+</script>
 
 <div id="custom-attribution">
   <a href="https://leafletjs.com" title="A JavaScript library for interactive maps">
@@ -642,6 +670,7 @@
 let allFeatures = [];
 let currentLayer = null;
 let grouped = {};
+let lastDetailProps = null;
 
 function debounce(func, wait) {
   let timeout;
@@ -656,7 +685,6 @@ function debounce(func, wait) {
 }
 
 function toggleFilterSidebar() {
-  console.log('Filter-Button wurde geklickt!');
   const sidebar = document.getElementById('sidebar');
   const filterButton = document.getElementById('filter-toggle');
   
@@ -664,27 +692,22 @@ function toggleFilterSidebar() {
     resetSearchResults();
     sidebar.style.display = 'none';
     filterButton.setAttribute('aria-expanded', 'false');
-    console.log('Sidebar geschlossen und zurückgesetzt');
   } else {
     sidebar.style.display = 'block';
     filterButton.setAttribute('aria-expanded', 'true');
     document.getElementById('search').focus();
-    console.log('Sidebar geöffnet');
   }
 }
 
 function resetSearchResults() {
   document.getElementById('search').value = '';
-  
   document.querySelectorAll('.category').forEach(category => {
     category.style.display = 'block';
     category.classList.remove('active');
   });
-  
   document.querySelectorAll('.location-entry').forEach(entry => {
     entry.style.display = 'none';
   });
-  
   document.getElementById('show-all-btn').classList.add('active');
 }
 
@@ -692,22 +715,17 @@ function resetSidebarState() {
   document.querySelectorAll('.category').forEach(category => {
     category.classList.remove('active');
   });
-  
   document.querySelectorAll('.location-entry').forEach(entry => {
     entry.style.display = 'none';
   });
-  
   document.getElementById('show-all-btn').classList.add('active');
 }
 
 function showAllMarkersAndClose() {
   if (currentLayer && allFeatures.length > 0) {
     const group = new L.featureGroup(currentLayer.getLayers());
-    map.fitBounds(group.getBounds(), {
-      padding: [20, 20]
-    });
+    map.fitBounds(group.getBounds(), { padding: [20, 20] });
   }
-  
   setTimeout(() => {
     document.getElementById('sidebar').style.display = 'none';
     document.getElementById('filter-toggle').setAttribute('aria-expanded', 'false');
@@ -717,7 +735,6 @@ function showAllMarkersAndClose() {
 document.addEventListener('click', function(e) {
   const sidebar = document.getElementById('sidebar');
   const filterButton = document.getElementById('filter-toggle');
-
   if (!filterButton.contains(e.target) && !sidebar.contains(e.target)) {
     if (sidebar.style.display === 'block') {
       resetSearchResults();
@@ -740,9 +757,7 @@ document.addEventListener('keydown', function(e) {
     }
     if (detailView.style.display === 'block') {
       detailView.classList.remove('show');
-      setTimeout(() => {
-        detailView.style.display = 'none';
-      }, 300);
+      setTimeout(() => { detailView.style.display = 'none'; }, 300);
     }
   }
 });
@@ -766,42 +781,26 @@ const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/
 osmLayer.addTo(map);
 
 map.on('baselayerchange', function(e) {
-  const attrSpan = document.getElementById('current-attribution');
-  if (e.name === 'Luftbild') {
-    attrSpan.innerHTML = 'Bilddaten: <a href="https://www.esri.com/en-us/home">Esri</a>, Earthstar Geographics, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-  } else {
-    attrSpan.innerHTML = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-Mitwirkende</a>';
-  }
+  const isSat = (e.layer === satelliteLayer);
+  refreshAttribution(isSat);
 });
 
 map.whenReady(function() {
-  console.log('Map ist bereit, füge Controls hinzu...');
-  
-  const layerControl = L.control.layers({
-    "Karte": osmLayer,
-    "Luftbild": satelliteLayer
-  }, undefined, { 
-    position: 'topleft',
-    collapsed: true,
-    autoZIndex: true
-  });
-
+  const layerControl = L.control.layers(
+    { [t("baselayer.map")]: osmLayer, [t("baselayer.satellite")]: satelliteLayer },
+    undefined,
+    { position: 'topleft', collapsed: true, autoZIndex: true }
+  );
   layerControl.addTo(map);
-  console.log('Layer-Control hinzugefügt');
 
   try {
     if (typeof L.Control.Fullscreen !== 'undefined') {
-      const fullscreenControl = new L.Control.Fullscreen({ 
-        position: 'topleft',
-        forceSeparateButton: true 
-      });
+      const fullscreenControl = new L.Control.Fullscreen({ position: 'topleft', forceSeparateButton: true });
       map.addControl(fullscreenControl);
-      console.log('Fullscreen-Control hinzugefügt');
     } else {
       createFallbackFullscreenButton();
     }
   } catch(error) {
-    console.error('Fullscreen-Control Fehler:', error);
     createFallbackFullscreenButton();
   }
 
@@ -812,16 +811,16 @@ map.whenReady(function() {
         const div = L.DomUtil.create('div', 'leaflet-control-location leaflet-bar leaflet-control');
         const btn = L.DomUtil.create('a', 'leaflet-control-location-button leaflet-bar-part', div);
         btn.href = '#';
-        btn.title = 'Standort ermitteln';
+        btn.title = t('geo.title');
         btn.setAttribute('role', 'button');
-        btn.setAttribute('aria-label', 'Standort ermitteln');
+        btn.setAttribute('aria-label', t('geo.title'));
         
         L.DomEvent.on(btn, 'click', function (e) {
           L.DomEvent.stopPropagation(e);
           L.DomEvent.preventDefault(e);
           
           if (!navigator.geolocation) {
-            alert('Standortbestimmung wird von diesem Browser nicht unterstützt.');
+            alert(t('geo.unsupported'));
             return;
           }
           
@@ -830,27 +829,58 @@ map.whenReady(function() {
           navigator.geolocation.getCurrentPosition(pos => {
             const { latitude, longitude } = pos.coords;
             L.marker([latitude, longitude]).addTo(map)
-              .bindPopup("Du bist hier!")
+              .bindPopup(t("geo.here"))
               .openPopup();
             map.setView([latitude, longitude], 16);
             btn.style.opacity = '1';
           }, (error) => {
             console.error('Geolocation error:', error);
-            alert('Standort konnte nicht bestimmt werden.');
+            alert(t('geo.failed'));
             btn.style.opacity = '1';
           });
         });
         
+        L.DomEvent.disableClickPropagation(div);
         return div;
       },
       onRemove: function() {}
     });
     
     map.addControl(new LocationControl());
-    console.log('Location-Control hinzugefügt');
+
+    const LanguageControl = L.Control.extend({
+      options: { position: 'topleft' },
+      onAdd: function () {
+        const div = L.DomUtil.create('div', 'leaflet-control-lang leaflet-bar leaflet-control');
+
+        const btnDE = L.DomUtil.create('a', 'leaflet-bar-part', div);
+        btnDE.id = 'btn-lang-de';
+        btnDE.href = '#';
+        btnDE.textContent = 'DE';
+        btnDE.title = 'Deutsch';
+        btnDE.setAttribute('aria-label', 'Deutsch');
+        L.DomEvent.on(btnDE, 'click', (e) => { L.DomEvent.stop(e); setLang('de'); });
+
+        const btnEN = L.DomUtil.create('a', 'leaflet-bar-part', div);
+        btnEN.id = 'btn-lang-en';
+        btnEN.href = '#';
+        btnEN.textContent = 'EN';
+        btnEN.title = 'English';
+        btnEN.setAttribute('aria-label', 'English');
+        L.DomEvent.on(btnEN, 'click', (e) => { L.DomEvent.stop(e); setLang('en'); });
+
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+      }
+    });
+
+    map.addControl(new LanguageControl());
+
+    updateUIStrings();
+    refreshAttribution(false);
     
   } catch(error) {
-    console.error('Location-Control Fehler:', error);
+    console.error('Location/Language-Control Fehler:', error);
   }
 });
 
@@ -860,7 +890,7 @@ function createFallbackFullscreenButton() {
       const div = L.DomUtil.create('div', 'leaflet-control-fullscreen leaflet-bar leaflet-control');
       const btn = L.DomUtil.create('a', 'leaflet-control-fullscreen-button leaflet-bar-part', div);
       btn.href = '#';
-      btn.title = 'Vollbildmodus';
+      btn.title = t('fullscreen.title');
       
       L.DomEvent.on(btn, 'click', function (e) {
         L.DomEvent.stopPropagation(e);
@@ -876,12 +906,12 @@ function createFallbackFullscreenButton() {
         }
       });
       
+      L.DomEvent.disableClickPropagation(div);
       return div;
     }
   });
   
   map.addControl(new FallbackFullscreen({ position: 'topleft' }));
-  console.log('Fallback Fullscreen-Control hinzugefügt');
 }
 
 const detailView = document.getElementById('detail-view');
@@ -897,70 +927,68 @@ const detailVideo = document.getElementById('detail-video');
 
 document.getElementById('detail-close').addEventListener('click', () => {
   detailView.classList.remove('show');
-  setTimeout(() => {
-    detailView.style.display = 'none';
-  }, 300);
+  setTimeout(() => { detailView.style.display = 'none'; }, 300);
 });
 
-function showDetail(props) {
-  detailTitle.textContent = props.name || "(Kein Titel)";
+function showDetail(props) { lastDetailProps = props;
+  detailTitle.textContent = pickLang(props, "name") || t("details.untitled");
 
-  if (props.description) {
-    detailDescription.innerHTML = `<h3>Beschreibung</h3><p>${props.description}</p>`;
+  const desc = pickLang(props, "description");
+  detailDescription.innerHTML = desc ? h3("description") + "<p>" + desc + "</p>" : "";
+
+  const addr = pickLang(props, "address");
+  detailAddress.innerHTML = addr ? h3("address") + "<p>" + addr + "</p>" : "";
+
+  const oh = pickLang(props, "opening_hours");
+  if (oh) {
+    const lines = String(oh)
+      .split(/[,;]\s*|\n+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join("<br>");
+    detailOpening.innerHTML = h3("opening") + "<p>" + lines + "</p>";
   } else {
-    detailDescription.innerHTML = '';
+    detailOpening.innerHTML = "";
   }
 
-  if (props.address) {
-    detailAddress.innerHTML = `<h3>Adresse</h3><p>${props.address}</p>`;
-  } else {
-    detailAddress.innerHTML = '';
-  }
+  const cost = pickLang(props, "cost");
+  detailCost.innerHTML = cost ? h3("cost") + "<p>" + cost + "</p>" : "";
 
-  if (props.opening_hours) {
-    detailOpening.innerHTML = `<h3>Öffnungszeiten</h3><p>${props.opening_hours}</p>`;
-  } else {
-    detailOpening.innerHTML = '';
-  }
+  const acc = pickLang(props, "accessible");
+  detailAccessible.innerHTML = acc ? h3("accessible") + "<p>" + acc + "</p>" : "";
 
-  if (props.cost) {
-    detailCost.innerHTML = `<h3>Kosten</h3><p>${props.cost}</p>`;
-  } else {
-    detailCost.innerHTML = '';
-  }
-
-  if (props.accessible) {
-    detailAccessible.innerHTML = `<h3>Barrierefreiheit</h3><p>${props.accessible}</p>`;
-  } else {
-    detailAccessible.innerHTML = '';
-  }
-
-  if (props.tags) {
-    detailTags.innerHTML = `<h3>Tags</h3><p>${props.tags}</p>`;
-  } else {
-    detailTags.innerHTML = '';
-  }
+  const tags = pickLang(props, "tags");
+  detailTags.innerHTML = tags ? h3("tags") + "<p>" + tags + "</p>" : "";
 
   if (props.image_url) {
-    detailImage.src = props.image_url;
-    detailImage.style.display = 'block';
-    detailImage.alt = props.name || 'Bild';
+    detailImage.classList.remove("loaded");
+    if (detailImage.src !== props.image_url) {
+      detailImage.onload = () => detailImage.classList.add("loaded");
+      detailImage.onerror = () => {
+        detailImage.classList.remove("loaded");
+        detailImage.removeAttribute("src");
+      };
+      detailImage.src = props.image_url;
+    }
+    detailImage.alt = props.name ? "Foto: " + props.name : "Foto";
   } else {
-    detailImage.style.display = 'none';
+    detailImage.classList.remove("loaded");
+    detailImage.removeAttribute("src");
+    detailImage.alt = "";
   }
 
   if (props.video_url) {
-    detailVideo.src = props.video_url;
-    detailVideo.style.display = 'block';
+    if (detailVideo.src !== props.video_url) detailVideo.src = props.video_url;
+    detailVideo.style.display = "block";
   } else {
-    detailVideo.style.display = 'none';
-    try { detailVideo.src = ''; } catch(_) {}
+    detailVideo.style.display = "none";
+    try { detailVideo.src = ""; } catch (_) {}
   }
 
-  detailView.style.display = 'block';
+  detailView.style.display = "block";
   setTimeout(() => {
     scrollDetailToTop();
-    detailView.classList.add('show');
+    detailView.classList.add("show");
   }, 10);
 
   resetSidebarState();
@@ -968,23 +996,17 @@ function showDetail(props) {
 
 function scrollDetailToTop() {
   detailView.scrollTop = 0;
-  try {
-    detailView.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (_) { /* ignore */ }
+  try { detailView.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) {}
 }
 
 function updateMarkers() {
   if (currentLayer) {
-    currentLayer.eachLayer(layer => {
-      layer.off();
-    });
+    currentLayer.eachLayer(layer => { layer.off(); });
     map.removeLayer(currentLayer);
   }
 
   currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
-    pointToLayer: (feature, latlng) => {
-      return L.marker(latlng);
-    },
+    pointToLayer: (feature, latlng) => L.marker(latlng),
     onEachFeature: (feature, layer) => {
       layer.on('click', () => showDetail(feature.properties));
     }
@@ -1020,14 +1042,18 @@ function buildCategoryList() {
   Object.keys(newGrouped).forEach(category => {
     const catDiv = document.createElement('div');
     catDiv.className = 'category';
-    catDiv.textContent = category;
+    const sampleProps = (newGrouped[category] && newGrouped[category][0] && newGrouped[category][0].properties) || {};
+    const label = (LANG === "en" ? (sampleProps.category_en || category) : category);
+    catDiv.textContent = label;
     catDiv.setAttribute('data-category', category);
     container.appendChild(catDiv);
 
     newGrouped[category].forEach(f => {
-      const locDiv = document.createElement('div');
-      locDiv.className = 'location-entry';
-      locDiv.textContent = f.properties?.name || 'Unbekannter Ort';
+        const locDiv = document.createElement('div');
+        locDiv.className = 'location-entry';
+        locDiv.textContent = pickLang(f.properties, "name") || "Unbekannter Ort";
+
+
 
       const clickHandler = () => {
         if (f.geometry?.coordinates) {
@@ -1043,9 +1069,7 @@ function buildCategoryList() {
     });
 
     catDiv.addEventListener('click', (e) => {
-      if (e.target.classList.contains('location-entry')) {
-        return;
-      }
+      if (e.target.classList.contains('location-entry')) return;
 
       const entries = catDiv.querySelectorAll('.location-entry');
       const isCurrentlyActive = catDiv.classList.contains('active');
@@ -1053,9 +1077,7 @@ function buildCategoryList() {
       document.querySelectorAll('.category').forEach(otherCat => {
         if (otherCat !== catDiv) {
           otherCat.classList.remove('active');
-          otherCat.querySelectorAll('.location-entry').forEach(entry => {
-            entry.style.display = 'none';
-          });
+          otherCat.querySelectorAll('.location-entry').forEach(entry => { entry.style.display = 'none'; });
         }
       });
 
@@ -1098,12 +1120,7 @@ function injectPlacesJSONLD(features, maxItems = 500) {
     const slug = slugify(p.name || `${lat}-${lng}`);
     const url = baseUrl + '#place-' + slug;
 
-    const place = {
-      "@type": "Place",
-      "name": p.name || "Unbekannter Ort",
-      "url": url
-    };
-
+    const place = { "@type": "Place", "name": p.name || "Unbekannter Ort", "url": url };
     if (p.address) place.address = p.address;
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
       place.geo = { "@type": "GeoCoordinates", latitude: lat, longitude: lng };
@@ -1134,15 +1151,11 @@ function injectPlacesJSONLD(features, maxItems = 500) {
 
 fetch('data.geojson')
   .then(resp => {
-    if (!resp.ok) {
-      throw new Error(`HTTP error! status: ${resp.status}`);
-    }
+    if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
     return resp.json();
   })
   .then(data => {
-    if (!data || !data.features) {
-      throw new Error('Invalid GeoJSON data structure');
-    }
+    if (!data || !data.features) throw new Error('Invalid GeoJSON data structure');
     
     allFeatures = data.features;
     grouped = {};
@@ -1159,8 +1172,7 @@ fetch('data.geojson')
     
     updateMarkers();
     buildCategoryList();
-    injectPlacesJSONLD(allFeatures); // ← JSON-LD ins <head> schreiben
-    console.log('GeoJSON-Daten erfolgreich geladen');
+    injectPlacesJSONLD(allFeatures);
   })
   .catch(err => {
     console.error("GeoJSON konnte nicht geladen werden:", err);
