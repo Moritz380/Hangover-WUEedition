@@ -107,13 +107,39 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   box-shadow: -4px 0 20px rgba(0,0,0,0.15);
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
   z-index: 13000;
   display: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transform: translateX(100%);
   transition: transform .3s cubic-bezier(0.4,0,0.2,1);
   will-change: width, transform;
+}
+
+:root{ --dv-handle-w: 40px; }
+
+#detail-handle{
+  position:absolute;
+  left: calc(-1 * var(--dv-handle-w));
+  top: 40%;
+  width: var(--dv-handle-w);
+  height: 110px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  color: #222;
+  border-radius: 12px 0 0 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.2);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  z-index: 15000; /* über allem */
+}
+
+#detail-handle::before{ content:"›"; font-size:26px; line-height:1; }
+#detail-view.show #detail-handle::before{ content:"‹"; }
+
+@media (max-width: 768px){
+  #detail-close{ display:none; }
 }
 
     #detail-inner{
@@ -127,6 +153,7 @@
     html { -webkit-text-size-adjust: 100%; }
 
     #detail-view.show { transform: translateX(0); }
+    #detail-view.show #detail-handle::before { content: "‹"; }
 
     #detail-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -270,16 +297,18 @@
     #filter-toggle:focus { outline: 2px solid rgba(230, 57, 80, 0.5); outline-offset: 2px; }
     #filter-toggle svg { width: 20px; height: 20px; fill: white; }
 
-    :root{
-      --sidebar-width: 420px;
-      --sidebar-scale-desktop: .8;
-      --sidebar-gutter: 12px;
-      --panel-target-width: min(
-        calc(var(--sidebar-width) * var(--sidebar-scale-desktop)),
-        calc(100vw - var(--sidebar-gutter))
-      );
-      --sidebar-scale: calc(var(--panel-target-width) / var(--sidebar-width));
-    }
+:root{
+  --sidebar-width: 420px;
+  --sidebar-scale-desktop: .8;
+  --sidebar-gutter: 12px;
+  --dv-handle-w: 40px;
+  --panel-target-width: min(
+    calc(var(--sidebar-width) * var(--sidebar-scale-desktop)),
+    calc(100vw - var(--sidebar-gutter) - var(--dv-handle-w))
+  );
+  --sidebar-scale: calc(var(--panel-target-width) / var(--sidebar-width));
+}
+
 
     #sidebar {
       position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
@@ -481,18 +510,18 @@
 
   <div id="map"></div>
 
-<div id="brand-logos" aria-label="Logos">
-  <img src="./assets/logo.png" alt="Catching Card" class="brand-logo">
+  <div id="brand-logos" aria-label="Logos">
+    <img src="./assets/logo.png" alt="Catching Card" class="brand-logo">
 
-  <a href="https://www.mcm.uni-wuerzburg.de/mp/"
-     target="_blank" rel="noopener noreferrer"
-     aria-label="Zur Website der Medienpsychologie (öffnet in neuem Tab)">
-    <img src="./assets/mp.png" alt="Medienpsychologie" class="brand-logo">
-  </a>
-</div>
-
+    <a href="https://www.mcm.uni-wuerzburg.de/mp/"
+       target="_blank" rel="noopener noreferrer"
+       aria-label="Zur Website der Medienpsychologie (öffnet in neuem Tab)">
+      <img src="./assets/mp.png" alt="Medienpsychologie" class="brand-logo">
+    </a>
+  </div>
 
   <div id="detail-view" role="dialog" aria-labelledby="detail-title">
+    <button id="detail-handle" aria-label="Detailansicht schließen"></button>
     <div id="detail-inner">
       <div id="detail-header">
         <h2 id="detail-title"></h2>
@@ -501,20 +530,19 @@
 
       <div id="detail-content">
         <img id="detail-image"
-          loading="lazy"
-          decoding="async"
-          width="960"
-          height="540"
-          alt="">
-          
+             loading="lazy"
+             decoding="async"
+             width="960"
+             height="540"
+             alt="">
         <iframe id="detail-video" src="" allowfullscreen style="display:none;"></iframe>
 
         <div id="detail-description" class="detail-section description"></div>
-        <div id="detail-address" class="detail-section address"></div>
-        <div id="detail-opening" class="detail-section hours"></div>
-        <div id="detail-cost" class="detail-section cost"></div>
-        <div id="detail-accessible" class="detail-section accessible"></div>
-        <div id="detail-tags" class="detail-section tags"></div>
+        <div id="detail-address"     class="detail-section address"></div>
+        <div id="detail-opening"     class="detail-section hours"></div>
+        <div id="detail-cost"        class="detail-section cost"></div>
+        <div id="detail-accessible"  class="detail-section accessible"></div>
+        <div id="detail-tags"        class="detail-section tags"></div>
       </div>
     </div>
   </div>
@@ -989,10 +1017,31 @@ const detailAccessible = document.getElementById('detail-accessible');
 const detailTags = document.getElementById('detail-tags');
 const detailVideo = document.getElementById('detail-video');
 
-document.getElementById('detail-close').addEventListener('click', () => {
+const detailHandle = document.getElementById('detail-handle');
+
+function closeDetail(){
   detailView.classList.remove('show');
   setTimeout(() => { detailView.style.display = 'none'; }, 300);
-});
+}
+
+document.getElementById('detail-close')?.addEventListener('click', closeDetail);
+detailHandle?.addEventListener('click', closeDetail);
+
+let startX=null, startY=null;
+detailView.addEventListener('touchstart', e => {
+  const t = e.touches[0]; startX = t.clientX; startY = t.clientY;
+}, {passive:true});
+
+detailView.addEventListener('touchend', e => {
+  if(startX===null) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - startX, dy = t.clientY - startY;
+  if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && dx > 0){
+    closeDetail();
+  }
+  startX=null; startY=null;
+}, {passive:true});
+
 
 function showDetail(props) { lastDetailProps = props;
   detailTitle.textContent = pickLang(props, "name") || t("details.untitled");
