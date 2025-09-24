@@ -33,6 +33,60 @@
       margin: 0;
       font-family: sans-serif;
     }
+
+#brand-logos a { display:inline-flex; line-height:0; border-radius:8px; }
+#brand-logos a:focus-visible { outline:2px solid #111; outline-offset:2px; }
+
+#brand-logos .brand-logo{
+  transition: transform .15s ease, opacity .15s ease;
+}
+
+#brand-logos .brand-logo:hover,
+#brand-logos a:hover .brand-logo{
+  opacity: .9;
+  transform: translateY(-1px);
+}
+
+    
+#cc-splash{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  z-index: 20000;
+  pointer-events: none;
+}
+
+
+#cc-splash .cc-logo{
+  width: clamp(260px, 60vw, 800px);
+  height: auto;
+  opacity: 0;
+  transform: translateY(6px) scale(.985);
+  animation: cc-in .35s cubic-bezier(.2,.8,.2,1) .08s forwards;
+  transition:
+    opacity 360ms cubic-bezier(.22,.61,.36,1),
+    transform 360ms cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform;
+  
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,.25));
+}
+
+
+@keyframes cc-in{
+  to { opacity: .65; transform: translateY(0) scale(1); }
+}
+
+#cc-splash.cc-out .cc-logo{
+  opacity: 0;
+  transform: translateY(4px) scale(1.005);
+}
+
+@media (prefers-reduced-motion: reduce){
+  #cc-splash .cc-logo{ animation: none; opacity: .65; transition: none; }
+}
+
     
 #map{
   height: 100dvh;
@@ -402,6 +456,10 @@
 </head>
 <body>
 
+<div id="cc-splash" aria-hidden="true">
+  <img src="./assets/logo.png" alt="" class="cc-logo">
+</div>
+
 <button id="filter-toggle" onclick="toggleFilterSidebar()" tabindex="0" 
         title="Suchen / Filtern" aria-expanded="false" aria-controls="sidebar">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30">
@@ -425,8 +483,14 @@
 
 <div id="brand-logos" aria-label="Logos">
   <img src="./assets/logo.png" alt="Catching Card" class="brand-logo">
-  <img src="./assets/mp.png"   alt="Medienpsychologie" class="brand-logo">
+
+  <a href="https://www.mcm.uni-wuerzburg.de/mp/"
+     target="_blank" rel="noopener noreferrer"
+     aria-label="Zur Website der Medienpsychologie (öffnet in neuem Tab)">
+    <img src="./assets/mp.png" alt="Medienpsychologie" class="brand-logo">
+  </a>
 </div>
+
 
   <div id="detail-view" role="dialog" aria-labelledby="detail-title">
     <div id="detail-inner">
@@ -1206,6 +1270,44 @@ document.getElementById('search').addEventListener('input', function() {
   debouncedSearch(this.value);
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const splash = document.getElementById('cc-splash');
+  if (!splash) return;
+
+  const logo = splash.querySelector('.cc-logo');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const showMs = reduce ? 250 : 450;
+  const logoFadeMs = 360;  
+
+  const hideSplash = () => {
+    splash.classList.add('cc-out');
+
+    setTimeout(() => {
+      splash.remove();
+    }, logoFadeMs);
+
+    localStorage.setItem('cc_splash_seen','1');
+  };
+
+  const startOnceLoaded = () => setTimeout(hideSplash, showMs);
+
+  if (logo && logo.complete && logo.naturalWidth > 0) {
+    startOnceLoaded();
+  } else if (logo) {
+    logo.addEventListener('load', startOnceLoaded, { once: true });
+    logo.addEventListener('error', () => {
+      console.warn('Splash-Logo nicht gefunden:', logo.src);
+      startOnceLoaded();
+    }, { once: true });
+  } else {
+    startOnceLoaded();
+  }
+});
+</script>
+
 
 </body>
 </html>
