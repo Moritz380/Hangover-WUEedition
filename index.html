@@ -132,7 +132,7 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  z-index: 15000; /* über allem */
+  z-index: 15000;
 }
 
 #detail-handle::before{ content:"›"; font-size:26px; line-height:1; }
@@ -307,8 +307,21 @@
     calc(100vw - var(--sidebar-gutter) - var(--dv-handle-w))
   );
   --sidebar-scale: calc(var(--panel-target-width) / var(--sidebar-width));
+  
 }
 
+/* Linksverschiebung für Button + Panel */
+:root { --filter-shift: 480px; } /* Wert nach Wunsch anpassen */
+
+#filter-toggle,
+#sidebar {
+  left: calc(50% - var(--filter-shift)) !important;
+}
+
+/* Auf kleinen Screens wieder mittig */
+@media (max-width: 768px){
+  #filter-toggle, #sidebar { left: 50% !important; }
+}
 
     #sidebar {
       position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
@@ -509,16 +522,26 @@
   </div>
 
   <div id="map"></div>
-
   <div id="brand-logos" aria-label="Logos">
+  <a href="https://instagram.com/catching_card"
+     target="_blank" rel="noopener noreferrer"
+     data-title-de="Zum Instagram-Kanal von Catching Cards"
+     data-title-en="Go to Catching Cards on Instagram"
+     title="Zum Instagram-Kanal von Catching Cards"
+     aria-label="Zum Instagram-Kanal von Catching Cards">
     <img src="./assets/logo.png" alt="Catching Card" class="brand-logo">
+  </a>
 
-    <a href="https://www.mcm.uni-wuerzburg.de/mp/"
-       target="_blank" rel="noopener noreferrer"
-       aria-label="Zur Website der Medienpsychologie (öffnet in neuem Tab)">
-      <img src="./assets/mp.png" alt="Medienpsychologie" class="brand-logo">
-    </a>
-  </div>
+  <a href="https://www.mcm.uni-wuerzburg.de/mp/"
+     target="_blank" rel="noopener noreferrer"
+     data-title-de="Zur Website der Medienpsychologie"
+     data-title-en="Go to the Media Psychology website"
+     title="Zur Website der Medienpsychologie"
+     aria-label="Zur Website der Medienpsychologie">
+    <img src="./assets/mp.png" alt="Medienpsychologie" class="brand-logo">
+  </a>
+</div>
+
 
   <div id="detail-view" role="dialog" aria-labelledby="detail-title">
     <button id="detail-handle" aria-label="Detailansicht schließen"></button>
@@ -630,91 +653,121 @@
     return cur;
   }
 
-  function updateUIStrings() {
-    document.documentElement.lang = LANG;
-
-    const ft = document.getElementById("filter-toggle");
-    if (ft) {
-      ft.setAttribute("title", t("filter.title"));
-      ft.querySelector("span")?.replaceChildren(document.createTextNode(t("filter.label")));
-    }
-
-    const showAllBtn = document.getElementById("show-all-btn");
-    if (showAllBtn) showAllBtn.textContent = t("filter.showAll");
-
-    const search = document.getElementById("search");
-    if (search) {
-      search.placeholder = t("search.placeholder");
-      search.setAttribute("aria-label", t("search.aria"));
-    }
-
-    const closeBtn = document.getElementById("detail-close");
-    if (closeBtn) closeBtn.setAttribute("aria-label", t("details.close"));
-
-    const geoBtn = document.querySelector(".leaflet-control-location-button");
-    if (geoBtn) {
-      geoBtn.setAttribute("title", t("geo.title"));
-      geoBtn.setAttribute("aria-label", t("geo.title"));
-    }
-
-    const fsBtn = document.querySelector(".leaflet-control-fullscreen-button");
-    if (fsBtn) fsBtn.setAttribute("title", t("fullscreen.title"));
-
-    document.getElementById("btn-lang-de")?.classList.toggle("active", LANG === "de");
-    document.getElementById("btn-lang-en")?.classList.toggle("active", LANG === "en");
-
-    refreshAttribution();
-
-    const footer = document.querySelector("footer");
-    if (footer) {
-      const links = footer.querySelectorAll("a");
-      if (links[0]) {
-        links[0].textContent = t("footer.imprint");
-        links[0].setAttribute("aria-label", t("footer.imprint"));
-      }
-      if (links[1]) {
-        links[1].textContent = t("footer.privacy");
-        links[1].setAttribute("aria-label", t("footer.privacy"));
-      }
-    }
-
-  }
-
-  function setLang(code) {
-    if (!I18N[code]) return;
-    LANG = code;
-    localStorage.setItem("ui_lang", code);
-    updateUIStrings();
-    buildCategoryList();
-    translateOpenUI();
-
-    function translateOpenUI() {
-
-  if (detailView && detailView.style.display === 'block' && lastDetailProps) {
-    showDetail(lastDetailProps);
-  }
-
-  const container = document.getElementById('location-list');
-  if (!container) return;
-
-  const openCats = new Set(
-    Array.from(container.querySelectorAll('.category.active')).map(el => el.dataset.category)
-  );
-  const scrollTop = container.scrollTop;
-
-  buildCategoryList();
-
-  container.querySelectorAll('.category').forEach(cat => {
-    if (openCats.has(cat.dataset.category)) {
-      cat.classList.add('active');
-      cat.querySelectorAll('.location-entry').forEach(e => { e.style.display = 'block'; });
+function applyLogoTitles() {
+  const lang = (document.documentElement.lang || 'de').slice(0, 2);
+  const key  = lang === 'en' ? 'titleEn' : 'titleDe';
+  document.querySelectorAll('#brand-logos a').forEach(a => {
+    const newTitle = a.dataset[key];
+    if (newTitle) {
+      a.title = newTitle;                    
+      a.setAttribute('aria-label', newTitle);
     }
   });
-  container.scrollTop = scrollTop;
 }
 
+function updateUIStrings() {
+  document.documentElement.lang = LANG;
+
+  const ft = document.getElementById("filter-toggle");
+  if (ft) {
+    ft.setAttribute("title", t("filter.title"));
+    ft.querySelector("span")?.replaceChildren(document.createTextNode(t("filter.label")));
   }
 
+  const showAllBtn = document.getElementById("show-all-btn");
+  if (showAllBtn) showAllBtn.textContent = t("filter.showAll");
+
+  const search = document.getElementById("search");
+  if (search) {
+    search.placeholder = t("search.placeholder");
+    search.setAttribute("aria-label", t("search.aria"));
+  }
+
+  const geoBtn = document.querySelector(".leaflet-control-location-button");
+  if (geoBtn) {
+    geoBtn.setAttribute("title", t("geo.title"));
+    geoBtn.setAttribute("aria-label", t("geo.title"));
+  }
+
+  const fsBtn = document.querySelector(".leaflet-control-fullscreen-button");
+  if (fsBtn) fsBtn.setAttribute("title", t("fullscreen.title"));
+
+  document.getElementById("btn-lang-de")?.classList.toggle("active", LANG === "de");
+  document.getElementById("btn-lang-en")?.classList.toggle("active", LANG === "en");
+
+  refreshAttribution();
+
+  const footer = document.querySelector("footer");
+  if (footer) {
+    const links = footer.querySelectorAll("a");
+    if (links[0]) {
+      links[0].textContent = t("footer.imprint");
+      links[0].setAttribute("aria-label", t("footer.imprint"));
+    }
+    if (links[1]) {
+      links[1].textContent = t("footer.privacy");
+      links[1].setAttribute("aria-label", t("footer.privacy"));
+    }
+  }
+
+  const closeLabel = t("details.close");
+  const closeBtnEl = document.getElementById("detail-close");
+  if (closeBtnEl) {
+    closeBtnEl.setAttribute("aria-label", closeLabel);
+    closeBtnEl.setAttribute("title", closeLabel);
+  }
+  const handleEl = document.getElementById("detail-handle");
+  if (handleEl) {
+    handleEl.setAttribute("aria-label", closeLabel);
+    handleEl.setAttribute("title", closeLabel);
+  }
+
+  applyLogoTitles();
+  refreshMarkerTitles();
+}
+
+function refreshMarkerTitles() {
+  if (!currentLayer) return;
+  currentLayer.eachLayer(layer => {
+    const title = pickLang(layer.feature?.properties, "name") || t("details.untitled");
+    layer.options.title = title;
+    const el = (layer.getElement && layer.getElement()) || layer._icon;
+    if (el) el.title = title; // nativer Tooltip wie beim Zoom
+  });
+}
+
+function setLang(code) {
+  if (!I18N[code]) return;
+  LANG = code;
+  localStorage.setItem("ui_lang", code);
+  updateUIStrings();
+  translateOpenUI();
+
+  function translateOpenUI() {
+    if (detailView && detailView.style.display === 'block' && lastDetailProps) {
+      showDetail(lastDetailProps);
+    }
+
+    const container = document.getElementById('location-list');
+    if (!container) return;
+
+    const openCats = new Set(
+      Array.from(container.querySelectorAll('.category.active')).map(el => el.dataset.category)
+    );
+    const scrollTop = container.scrollTop;
+
+    buildCategoryList(); // einmal neu aufbauen (neue Labels)
+
+    container.querySelectorAll('.category').forEach(cat => {
+      if (openCats.has(cat.dataset.category)) {
+        cat.classList.add('active');
+        cat.querySelectorAll('.location-entry').forEach(e => { e.style.display = 'block'; });
+      }
+    });
+    container.scrollTop = scrollTop;
+    applyMapFilter();
+  }
+}
     function h3(key) { return '<h3>' + t('details.' + key) + '</h3>'; }
 
     function pickLang(props, base) { if (!props) return ""; const v = props[base + "_" + LANG]; if (v && String(v).trim()) return v; return props[base] || ""; }
@@ -764,6 +817,9 @@ let currentLayer = null;
 let grouped = {};
 let lastDetailProps = null;
 
+// --- Helfer: Strings normieren (Trim, doppelte Spaces raus, Unicode normalisieren)
+function norm(s){ return String(s||'').normalize('NFKC').replace(/\s+/g,' ').trim(); }
+
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -774,6 +830,87 @@ function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+}
+
+let searchTerm = "";
+
+function setMarkersFor(features) {
+  if (currentLayer) { currentLayer.off(); map.removeLayer(currentLayer); }
+  currentLayer = L.geoJSON({ type: "FeatureCollection", features }, {
+    pointToLayer: (f, latlng) => L.marker(latlng, {
+      title: pickLang(f.properties, "name") || t("details.untitled")
+    }),
+    onEachFeature: (f, layer) => layer.on("click", () => showDetail(f.properties))
+  }).addTo(map);
+
+  refreshMarkerTitles(); // wichtig
+}
+
+// 7 kanonische Kategorien (Schlüssel + Labels + einfache Synonyme)
+const CATS = [
+  { key:'food',      de:'Essen & Trinken',             en:'Food & Drink',
+    match:['essen','trinken','food','drink','bar','bars','cafe','café','restaurant'] },
+  { key:'sport',     de:'Sport & Aktivität',           en:'Sports & Activities',
+    match:['sport','aktivität','activity','activities','freizeit','outdoor'] },
+  { key:'social',    de:'Unterhaltung & Begegnung',    en:'Social & Meetups',
+    match:['unterhaltung','begegnung','social','meetup','treffpunkt'] },
+  { key:'culture',   de:'Kultur & Sehenswürdigkeiten', en:'Culture & Sights',
+    match:['kultur','sehenswürd','museum','theater','sight'] },
+  { key:'events',    de:'Events & Festivals',          en:'Events & Festivals',
+    match:['event','events','festival','festivals','veranstalt'] },
+  { key:'nightlife', de:'Ausgehen & Nachtleben',       en:'Nightlife / Food & Drink',
+    match:['nachtleben','nightlife','ausgehen','club','party'] },
+  { key:'uni',       de:'Universität & Studium',       en:'University & Studies',
+    match:['universität','uni','studium','university','study','campus'] },
+];
+
+const LABEL = (key) => {
+  const c = CATS.find(c=>c.key===key);
+  return LANG==='en' ? c.en : c.de;
+};
+
+// explizite Mehrfachzuordnung per Name (normiert)
+const MULTI_CAT_OVERRIDE = new Map([
+  [norm('Wohnzimmer Bar'),      ['food','nightlife']],
+  [norm('Waldschänke Dornheim'),['food','nightlife']],
+]);
+
+function categoriesForFeature(props){
+  if (!props) return [];
+  const nameKey = norm(props.name || props.name_de || props.name_en);
+  if (MULTI_CAT_OVERRIDE.has(nameKey)) return MULTI_CAT_OVERRIDE.get(nameKey);
+
+  const raw = norm(props.category).toLowerCase();
+  if (!raw) return [];
+  const parts = raw.split(/[\/|,&;]+/g).map(s=>s.trim()).filter(Boolean);
+
+  const keys = new Set();
+  for (const part of parts){
+    for (const c of CATS){
+      if (c.match.some(m => part.includes(m))) keys.add(c.key);
+    }
+  }
+  return [...keys];
+}
+
+function applyMapFilter() {
+  const activeKeys = Array.from(document.querySelectorAll('.category.active'))
+    .map(el => el.dataset.category);
+
+  const term = (searchTerm || "").toLowerCase().trim();
+
+  const filtered = allFeatures.filter(f => {
+    const p = f.properties || {};
+    const names = [p.name, p.name_de, p.name_en].filter(Boolean).map(s => String(s).toLowerCase());
+    const inSearch = !term || names.some(n => n.includes(term));
+
+    const keys = categoriesForFeature(p);
+    const inCat = !activeKeys.length || keys.some(k => activeKeys.includes(k));
+
+    return inSearch && inCat;
+  });
+
+  setMarkersFor(filtered);
 }
 
 function toggleFilterSidebar() {
@@ -815,8 +952,17 @@ function resetSidebarState() {
 
 function showAllMarkersAndClose() {
   if (currentLayer && allFeatures.length > 0) {
-    const group = new L.featureGroup(currentLayer.getLayers());
-    map.fitBounds(group.getBounds(), { padding: [20, 20] });
+  
+    searchTerm = "";
+    const input = document.getElementById('search');
+    if (input) input.value = "";
+    document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+
+    applyMapFilter();
+    const group = L.featureGroup(currentLayer.getLayers());
+    if (group.getLayers().length) {
+      map.fitBounds(group.getBounds(), { padding: [20, 20] });
+    }
   }
   setTimeout(() => {
     document.getElementById('sidebar').style.display = 'none';
@@ -1113,97 +1259,62 @@ function scrollDetailToTop() {
 }
 
 function updateMarkers() {
-  if (currentLayer) {
-    currentLayer.eachLayer(layer => { layer.off(); });
-    map.removeLayer(currentLayer);
+  setMarkersFor(allFeatures);
   }
-
-  currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
-    pointToLayer: (feature, latlng) => L.marker(latlng),
-    onEachFeature: (feature, layer) => {
-      layer.on('click', () => showDetail(feature.properties));
-    }
-  }).addTo(map);
-}
 
 function buildCategoryList() {
   const container = document.getElementById('location-list');
   container.innerHTML = '';
 
-  const multiCategoryLocations = {
-    "Wohnzimmer Bar": ["Essen & Trinken", "Ausgehen & Nachtleben"],
-    "Waldschänke Dornheim": ["Essen & Trinken", "Ausgehen & Nachtleben"]
-  };
+  const groups = {};
+  for (const f of allFeatures) {
+    const keys = categoriesForFeature(f.properties);
+    const list = keys.length ? keys : []; // ohne Treffer weglassen oder ggf. 'other'
+    for (const k of list) (groups[k] ||= []).push(f);
+  }
 
-  const newGrouped = {};
+  for (const cat of CATS) {
+    const arr = groups[cat.key];
+    if (!arr || !arr.length) continue;
 
-  allFeatures.forEach(f => {
-    const locationName = f.properties?.name;
-    const originalCategory = f.properties?.category;
-
-    if (multiCategoryLocations[locationName]) {
-      multiCategoryLocations[locationName].forEach(category => {
-        if (!newGrouped[category]) newGrouped[category] = [];
-        newGrouped[category].push(f);
-      });
-    } else if (originalCategory && originalCategory !== "Ausgehen & Nachtleben/Essen & Trinken") {
-      if (!newGrouped[originalCategory]) newGrouped[originalCategory] = [];
-      newGrouped[originalCategory].push(f);
-    }
-  });
-
-  Object.keys(newGrouped).forEach(category => {
     const catDiv = document.createElement('div');
     catDiv.className = 'category';
-    const sampleProps = (newGrouped[category] && newGrouped[category][0] && newGrouped[category][0].properties) || {};
-    const label = (LANG === "en" ? (sampleProps.category_en || category) : category);
-    catDiv.textContent = label;
-    catDiv.setAttribute('data-category', category);
+    catDiv.dataset.category = cat.key;
+    catDiv.textContent = LABEL(cat.key);
     container.appendChild(catDiv);
 
-    newGrouped[category].forEach(f => {
-        const locDiv = document.createElement('div');
-        locDiv.className = 'location-entry';
-        locDiv.textContent = pickLang(f.properties, "name") || "Unbekannter Ort";
-
-
-
-      const clickHandler = () => {
+    arr.sort((a,b) => (pickLang(a.properties,'name')||'').localeCompare(pickLang(b.properties,'name')||''));
+    for (const f of arr) {
+      const locDiv = document.createElement('div');
+      locDiv.className = 'location-entry';
+      locDiv.textContent = pickLang(f.properties, "name") || "Unbekannter Ort";
+      locDiv.addEventListener('click', () => {
         if (f.geometry?.coordinates) {
           map.setView([f.geometry.coordinates[1], f.geometry.coordinates[0]], 18);
           showDetail(f.properties);
           document.getElementById('sidebar').style.display = 'none';
           document.getElementById('filter-toggle').setAttribute('aria-expanded', 'false');
         }
-      };
-
-      locDiv.onclick = clickHandler;
+      });
       catDiv.appendChild(locDiv);
-    });
+    }
 
     catDiv.addEventListener('click', (e) => {
       if (e.target.classList.contains('location-entry')) return;
-
-      const entries = catDiv.querySelectorAll('.location-entry');
-      const isCurrentlyActive = catDiv.classList.contains('active');
-
-      document.querySelectorAll('.category').forEach(otherCat => {
-        if (otherCat !== catDiv) {
-          otherCat.classList.remove('active');
-          otherCat.querySelectorAll('.location-entry').forEach(entry => { entry.style.display = 'none'; });
-        }
+      const open = !catDiv.classList.contains('active');
+      document.querySelectorAll('.category').forEach(other => {
+        other.classList.remove('active');
+        other.querySelectorAll('.location-entry').forEach(entry => entry.style.display = 'none');
       });
-
-      if (isCurrentlyActive) {
-        catDiv.classList.remove('active');
-        entries.forEach(e => { e.style.display = 'none'; });
-      } else {
+      if (open) {
         catDiv.classList.add('active');
-        entries.forEach(e => { e.style.display = 'block'; });
+        catDiv.querySelectorAll('.location-entry').forEach(entry => entry.style.display = 'block');
       }
+      applyMapFilter();
     });
-  });
+  }
 }
+
 
 function slugify(str) {
   return (str || '')
@@ -1293,31 +1404,69 @@ fetch('data.geojson')
     container.innerHTML = '<p style="color: red;">Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>';
   });
 
-const debouncedSearch = debounce(function(term) {
-  const searchTerm = term.toLowerCase();
+const debouncedSearch = debounce((val) => {
+  searchTerm = val;
+
+  const q = (val || '').toLowerCase().trim();
   const categories = document.querySelectorAll('.category');
-  
+  const showAllBtn = document.getElementById('show-all-btn');
+
+  let matchesTotal = 0;
+
   categories.forEach(category => {
     const entries = category.querySelectorAll('.location-entry');
-    let hasVisibleEntries = false;
-    
-    entries.forEach(item => {
-      const locationName = item.textContent.toLowerCase();
-      if (locationName.includes(searchTerm)) {
-        item.style.display = 'block';
-        hasVisibleEntries = true;
-      } else {
-        item.style.display = 'none';
-      }
-    });
-    
-    category.style.display = hasVisibleEntries ? 'block' : 'none';
-  });
-}, 300);
+    let matches = 0;
 
-document.getElementById('search').addEventListener('input', function() {
-  debouncedSearch(this.value);
-});
+    entries.forEach(item => {
+      const name = (item.textContent || '').toLowerCase();
+      const show = !q || name.includes(q);
+      item.style.display = show ? 'block' : 'none';
+      if (show) matches++;
+    });
+
+    if (q) {
+      if (matches > 0) {
+        category.style.display = 'block';
+        category.classList.add('active');    
+      } else {
+        category.style.display = 'none';
+        category.classList.remove('active');
+      }
+    } else {
+      category.style.display = 'block';
+      category.classList.remove('active');
+      entries.forEach(e => e.style.display = 'none');
+    }
+
+    matchesTotal += matches;
+  });
+
+  if (showAllBtn) showAllBtn.classList.toggle('active', !q);
+
+  const container = document.getElementById('location-list');
+  let empty = container.querySelector('.no-results');
+  if (!q || matchesTotal > 0) {
+    if (empty) empty.remove();
+  } else {
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.className = 'no-results';
+      empty.style.cssText = 'padding:8px 4px;color:#666;font-size:12px;';
+      empty.textContent = (LANG === 'en') ? 'No results' : 'Keine Treffer';
+      container.appendChild(empty);
+    }
+  }
+
+  applyMapFilter();
+}, 200);
+
+const searchInput = document.getElementById('search');
+if (searchInput) {
+  searchInput.addEventListener('input', function () {
+    debouncedSearch(this.value);
+  });
+}
+
 </script>
 
 <script>
