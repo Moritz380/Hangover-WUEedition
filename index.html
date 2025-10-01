@@ -310,15 +310,15 @@
   
 }
 
-/* Linksverschiebung für Button + Panel */
-:root { --filter-shift: 480px; } /* Wert nach Wunsch anpassen */
+
+:root { --filter-shift: 480px; } 
 
 #filter-toggle,
 #sidebar {
   left: calc(50% - var(--filter-shift)) !important;
 }
 
-/* Auf kleinen Screens wieder mittig */
+
 @media (max-width: 768px){
   #filter-toggle, #sidebar { left: 50% !important; }
 }
@@ -494,6 +494,17 @@
   footer { font-size: 9px; padding: 2px 8px; bottom: 35px !important; max-width: 80vw; gap: 8px; }
   #custom-attribution { font-size: 8px !important; padding: 2px 6px !important; bottom: 8px !important; right: 4px !important; }
 }
+
+.cc-mini{
+  font-size:.72rem;      
+  opacity:.6;         
+  margin:.25rem 0 0;
+}
+.cc-mini a{text-decoration:none}
+.cc-mini:hover{opacity:.95}
+#detail-image + #detail-credit { margin-top: 6px; }
+#detail-content:has(#detail-credit:not([hidden])) #detail-image { margin-bottom: 6px; }
+
   </style>
 </head>
 <body>
@@ -558,6 +569,8 @@
              width="960"
              height="540"
              alt="">
+             <p id="detail-credit" class="cc-mini" hidden></p>  
+
         <iframe id="detail-video" src="" allowfullscreen style="display:none;"></iframe>
 
         <div id="detail-description" class="detail-section description"></div>
@@ -732,7 +745,7 @@ function refreshMarkerTitles() {
     const title = pickLang(layer.feature?.properties, "name") || t("details.untitled");
     layer.options.title = title;
     const el = (layer.getElement && layer.getElement()) || layer._icon;
-    if (el) el.title = title; // nativer Tooltip wie beim Zoom
+    if (el) el.title = title; 
   });
 }
 
@@ -756,7 +769,7 @@ function setLang(code) {
     );
     const scrollTop = container.scrollTop;
 
-    buildCategoryList(); // einmal neu aufbauen (neue Labels)
+    buildCategoryList();
 
     container.querySelectorAll('.category').forEach(cat => {
       if (openCats.has(cat.dataset.category)) {
@@ -817,7 +830,7 @@ let currentLayer = null;
 let grouped = {};
 let lastDetailProps = null;
 
-// --- Helfer: Strings normieren (Trim, doppelte Spaces raus, Unicode normalisieren)
+
 function norm(s){ return String(s||'').normalize('NFKC').replace(/\s+/g,' ').trim(); }
 
 function debounce(func, wait) {
@@ -843,10 +856,10 @@ function setMarkersFor(features) {
     onEachFeature: (f, layer) => layer.on("click", () => showDetail(f.properties))
   }).addTo(map);
 
-  refreshMarkerTitles(); // wichtig
+  refreshMarkerTitles();
 }
 
-// 7 kanonische Kategorien (Schlüssel + Labels + einfache Synonyme)
+
 const CATS = [
   { key:'food',      de:'Essen & Trinken',             en:'Food & Drink',
     match:['essen','trinken','food','drink','bar','bars','cafe','café','restaurant'] },
@@ -869,7 +882,7 @@ const LABEL = (key) => {
   return LANG==='en' ? c.en : c.de;
 };
 
-// explizite Mehrfachzuordnung per Name (normiert)
+
 const MULTI_CAT_OVERRIDE = new Map([
   [norm('Wohnzimmer Bar'),      ['food','nightlife']],
   [norm('Waldschänke Dornheim'),['food','nightlife']],
@@ -1235,7 +1248,30 @@ function showDetail(props) { lastDetailProps = props;
     detailImage.removeAttribute("src");
     detailImage.alt = "";
   }
+const creditEl = document.getElementById('detail-credit');
+if (creditEl) {
+  const hasImg = !!props.image_url;
+  const author  = props.credit_author  || props.author  || props.image_author;
+  const source  = props.credit_source  || props.source  || props.image_source;
+  const licUrl  = props.credit_license_url  || props.license_url  || 'https://creativecommons.org/licenses/by-sa/4.0/';
+  const licName = props.credit_license_name || props.license_name || 'CC BY-SA 4.0';
+  const tip     = (props.credit_title || props.title || '');
+  const edited  = props.credit_edited ? ' – bearbeitet' : '';
 
+  if (hasImg && (author || source)) {
+    const authorPart = source
+      ? `<a href="${source}" target="_blank" rel="noopener">${author || 'Quelle'}</a>`
+      : (author || 'Quelle');
+    creditEl.innerHTML = `© ${authorPart} · <a href="${licUrl}" rel="license" target="_blank">${licName}</a>`;
+    creditEl.title = (tip ? `„${tip}“` : '') + edited;
+    creditEl.hidden = false;
+  } else {
+    creditEl.hidden = true;
+    creditEl.textContent = '';
+    creditEl.removeAttribute('title');
+  }
+  detailImage.style.marginBottom = creditEl.hidden ? '20px' : '6px';
+}
   if (props.video_url) {
     if (detailVideo.src !== props.video_url) detailVideo.src = props.video_url;
     detailVideo.style.display = "block";
@@ -1269,7 +1305,7 @@ function buildCategoryList() {
   const groups = {};
   for (const f of allFeatures) {
     const keys = categoriesForFeature(f.properties);
-    const list = keys.length ? keys : []; // ohne Treffer weglassen oder ggf. 'other'
+    const list = keys.length ? keys : []; 
     for (const k of list) (groups[k] ||= []).push(f);
   }
 
